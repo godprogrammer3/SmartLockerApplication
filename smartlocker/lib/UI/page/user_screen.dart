@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import './user_result_screen.dart';
 class HomeUser extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -26,7 +26,7 @@ class _HomeUserState extends State<HomeUser> {
         backgroundColor: Colors.deepOrange,
       ),
       drawer: SideMenuUser(),
-      
+      body:HomeUserBody(),
     );
   }
 
@@ -86,4 +86,58 @@ class SideMenuUser extends StatelessWidget {
     );
   }
 
+}
+
+class HomeUserBody extends StatelessWidget {
+  var _inputTextController = new TextEditingController();
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+          Container(
+            margin: EdgeInsets.only(bottom: 10.0),
+            width: 200,
+            padding: EdgeInsets.all(10.0),
+            decoration: new BoxDecoration(
+                border: new Border.all(color: Colors.black)
+            ),
+                child: TextField(
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    color: Colors.black,
+                  ),
+                  decoration: InputDecoration(
+                      hintText: 'กรอกหมายเลขตู้',
+                  ),
+                  keyboardType: TextInputType.numberWithOptions(signed: false),
+                  controller: _inputTextController,
+                ),
+            ),
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            RaisedButton(
+              child: Text('ขอเปิดตู้'),
+              onPressed: ((){
+                print(_inputTextController.text);
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                    builder: (context) =>ResultUser(boxNumber:_inputTextController.text),
+                ),
+                );
+              }),
+            ),
+          ],
+        ),
+      ],
+    );
+
+  }
 }
