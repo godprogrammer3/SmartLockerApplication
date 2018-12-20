@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import './app_screens/user_screen.dart';
-import './app_screens/admin_screen.dart';
+
 
 void main() => runApp(MyApp());
 
