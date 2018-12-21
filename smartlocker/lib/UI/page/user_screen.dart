@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import './user_result_screen.dart';
+import './admin_screen.dart';
 class HomeUser extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -129,7 +130,8 @@ class HomeUserBody extends StatelessWidget {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                    builder: (context) =>ResultUser(boxNumber:_inputTextController.text),
+                    builder:(context) =>ResultUser(boxNumber:_inputTextController.text),
+                              
                 ),
                 );
               }),

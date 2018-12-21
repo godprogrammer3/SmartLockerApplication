@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 class HomeAdmin extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-    return _HomeUserState();
+    return _HomeAdminState();
   }
 }
 
-class _HomeUserState extends State<HomeAdmin> {
+class _HomeAdminState extends State<HomeAdmin> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
@@ -26,7 +26,7 @@ class _HomeUserState extends State<HomeAdmin> {
         backgroundColor: Colors.deepOrange,
       ),
       drawer: SideMenuAdmin(),
-      
+      body: HomeAdminBody(),
     );
   }
 
@@ -99,5 +99,62 @@ class SideMenuAdmin extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class HomeAdminBody extends StatefulWidget{
+  _HomeAdminBodyState createState()=> _HomeAdminBodyState();
+}
+
+class _HomeAdminBodyState extends State<HomeAdminBody>{
+ 
+  final lockerStatus = List<int>.generate(9, (i)=>0);
+  List<Color> lockerColor = List.generate(9, (i){return Colors.green;});
+  void onChanged(index){
+    lockerStatus[index]++;
+    lockerStatus[index]%=3;
+    if(lockerStatus[index] == 0){
+      lockerColor[index] = Colors.green;
+    }else if(lockerStatus[index] == 1)
+    {
+      lockerColor[index] = Colors.yellow;
+    }
+    else{
+      lockerColor[index] = Colors.red;
+    }
+  } 
+  @override
+  Widget build(BuildContext context){
+    return Container(
+      margin: EdgeInsets.only(top: 80.0),
+      child: GridView.count(
+        crossAxisCount: 3,
+        children: List.generate(9, (index){
+          return GestureDetector(
+            onTap: (){
+              setState((){
+                onChanged(index);
+              });
+            },
+            child: Column(
+              children: <Widget>[
+                Icon(
+                  Icons.branding_watermark,
+                  size: 90.0,
+                  color: lockerColor[index],
+                ),
+                Text(
+                  index.toString(),
+                  style: TextStyle(
+                    fontSize: 20.0,
+                  ),
+                ),
+              ],
+            )
+          );
+        }),
+      ),
+    );
+          
   }
 }

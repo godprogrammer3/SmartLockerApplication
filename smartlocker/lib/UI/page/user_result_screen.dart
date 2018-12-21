@@ -3,7 +3,7 @@ import 'dart:async';
 
 class ResultUser extends StatefulWidget{
   ResultUser({Key key,this.boxNumber}):super(key:key);
-  String boxNumber;
+  final String boxNumber;
   @override
   State<StatefulWidget> createState() {
     return _ResultUserState(boxNumber: boxNumber);
