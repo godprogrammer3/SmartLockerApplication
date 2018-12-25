@@ -3,11 +3,12 @@ import 'user_screen.dart';
 import 'dart:async';
 
 class ResultUser extends StatefulWidget {
-  ResultUser({Key key, this.boxNumber}) : super(key: key);
+  ResultUser({Key key, this.boxNumber,this.slotNumber}) : super(key: key);
   final String boxNumber;
+  final String slotNumber;
   @override
   State<StatefulWidget> createState() {
-    return _ResultUserState(boxNumber: boxNumber);
+    return _ResultUserState(boxNumber: boxNumber,slotNumber: slotNumber);
   }
 }
 
@@ -18,8 +19,9 @@ class _ResultUserState extends State<ResultUser> {
   String _displayText1 = 'ยังไม่ถูกอนุมัติ';
   String _displayText2 = 'กรุณารอการอนุมัติจากแอดมิน';
   String _displayText3 = 'ยกเลิกขอเปิดตู้';
-  _ResultUserState({Key key, this.boxNumber});
+  _ResultUserState({Key key, this.boxNumber,this.slotNumber});
   String boxNumber;
+  String slotNumber;
   void onChanged() {
     _result++;
     _result %= 3;
@@ -74,7 +76,7 @@ class _ResultUserState extends State<ResultUser> {
               children: <Widget>[
                 Container(
                   child: Text(
-                    'ตู้หมายเลข $boxNumber',
+                    'ตู้หมายเลข $boxNumber ช่องที่ $slotNumber',
                     style: TextStyle(
                       fontSize: 20.0,
                       fontFamily: 'Kanit'

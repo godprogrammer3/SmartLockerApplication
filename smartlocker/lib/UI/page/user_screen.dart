@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import './user_result_screen.dart';
-import './admin_screen.dart';
+import '../widget/Widget.dart';
+import '../page/Page.dart';
 
 class HomeUser extends StatefulWidget {
   @override
@@ -88,7 +88,10 @@ class SideMenuUser extends StatelessWidget {
 }
 
 class HomeUserBody extends StatelessWidget {
-  var _inputTextController = new TextEditingController();
+
+  var _inputLockerController = new TextEditingController();
+  var _inputSlotController = new TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -109,11 +112,33 @@ class HomeUserBody extends StatelessWidget {
                   color: Colors.black,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'กรอกหมายเลขตู้',
-                  hintStyle: TextStyle(fontFamily: 'Kanit')
-                ),
+                    hintText: 'กรอกหมายเลขตู้',
+                    hintStyle: TextStyle(fontFamily: 'Kanit')),
                 keyboardType: TextInputType.numberWithOptions(signed: false),
-                controller: _inputTextController,
+                controller: _inputLockerController,
+              ),
+            ),
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Container(
+              margin: EdgeInsets.only(bottom: 10.0),
+              width: 200,
+              padding: EdgeInsets.all(10.0),
+              decoration: new BoxDecoration(
+                  border: new Border.all(color: Colors.black)),
+              child: TextField(
+                style: TextStyle(
+                  fontSize: 20.0,
+                  color: Colors.black,
+                ),
+                decoration: InputDecoration(
+                    hintText: 'กรอกหมายเลขช่อง',
+                    hintStyle: TextStyle(fontFamily: 'Kanit')),
+                keyboardType: TextInputType.numberWithOptions(signed: false),
+                controller: _inputSlotController,
               ),
             ),
           ],
@@ -122,54 +147,17 @@ class HomeUserBody extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             RaisedButton(
-              child: Text('ขอเปิดตู้',style: TextStyle(fontFamily: 'Kanit'),),
+              child: Text(
+                'ขอเปิดตู้',
+                style: TextStyle(fontFamily: 'Kanit'),
+              ),
               onPressed: () {
-                _showAlertDialog(context);
+                showUserReasonForm(context, _inputLockerController.text, _inputSlotController.text);
               },
             ),
           ],
         ),
       ],
     );
-  }
-
-  void _showAlertDialog(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-            title: Text(
-              'ยืนยัน\nจะขอเปิดตู้นี้ใช่หรือไม่',
-              style: TextStyle(fontFamily: 'Kanit'),
-            ),
-            content: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                FlatButton(
-                  child: Text(
-                    'ไม่ใช่',
-                    style: TextStyle(
-                        fontFamily: 'Kanit', color: Colors.blueAccent),
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-                FlatButton(
-                  child: Text(
-                    'ใช่',
-                    style: TextStyle(
-                        fontFamily: 'Kanit', color: Colors.blueAccent),
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ResultUser(
-                                boxNumber: _inputTextController.text)));
-                  },
-                ),
-              ],
-            )));
-  }
+  }  
 }
