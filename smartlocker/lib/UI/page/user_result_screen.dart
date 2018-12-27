@@ -1,30 +1,49 @@
 import 'package:flutter/material.dart';
-import 'user_screen.dart';
+import 'Page.dart';
 import 'dart:async';
-
+import '../../model/Model.dart';
 class ResultUser extends StatefulWidget {
-  ResultUser({Key key, this.boxNumber,this.slotNumber}) : super(key: key);
+  ResultUser({Key key, this.boxNumber,this.slotNumber,this.requestId}) : super(key: key);
   final String boxNumber;
   final String slotNumber;
+  final String requestId;
   @override
   State<StatefulWidget> createState() {
-    return _ResultUserState(boxNumber: boxNumber,slotNumber: slotNumber);
+    return _ResultUserState(boxNumber: boxNumber,slotNumber: slotNumber,requestId:requestId);
   }
 }
-
+enum state{
+    running,
+    stop,
+}
 class _ResultUserState extends State<ResultUser> {
-  int _result = 0;
-  IconData _showIcon = Icons.query_builder;
-  Color _iconColor = Colors.yellow;
-  String _displayText1 = 'ยังไม่ถูกอนุมัติ';
-  String _displayText2 = 'กรุณารอการอนุมัติจากแอดมิน';
-  String _displayText3 = 'ยกเลิกขอเปิดตู้';
-  _ResultUserState({Key key, this.boxNumber,this.slotNumber});
+  int _result;
+  state _currentState;
+  int _countState;
+  IconData _showIcon;
+  Color _iconColor ;
+  String _displayText1 ;
+  String _displayText2;
+  String _displayText3;
+  _ResultUserState({Key key, this.boxNumber,this.slotNumber,this.requestId});
   String boxNumber;
   String slotNumber;
+  String requestId;
+  var _requestController = new RequestController();
+  @override
+  void initState(){
+    _result = 0;
+    _showIcon = Icons.query_builder;
+    _iconColor = Colors.yellow;
+    _displayText1 = 'ยังไม่ถูกอนุมัติ';
+    _displayText2 = 'กรุณารอการอนุมัติจากแอดมิน';
+    _displayText3 = 'ยกเลิกขอเปิดตู้';
+    _currentState = state.running;
+    _countState = 0;
+    const millis = const Duration(milliseconds: 500);
+    new Timer.periodic(millis,(Timer t)=>updateState(t));  
+  }
   void onChanged() {
-    _result++;
-    _result %= 3;
     setState(() {
       if (_result == 0) {
         _showIcon = Icons.query_builder;
@@ -48,13 +67,29 @@ class _ResultUserState extends State<ResultUser> {
     });
   }
 
-  Future time(int time2) async {
-    Completer c = new Completer();
-    new Timer(new Duration(seconds: time2), () {
-      print('HelloTimeout');
-      time(time2);
-    });
-    return c.future;
+  updateState(Timer t) async {
+    if(_currentState == state.running)
+    {
+      print(_countState++);
+      Map result = await _requestController.userGet(requestId,0) as Map;
+      print(result);
+      if(result['status']=='1')
+      {
+        _result = 2;
+        onChanged();
+        t.cancel();
+      }
+      else if(result['status']=='-1')
+      {
+        _result = 1;
+        onChanged();
+         t.cancel();
+      }
+    }
+    else
+    {
+      t.cancel();
+    }
   }
 
   @override
@@ -128,7 +163,15 @@ class _ResultUserState extends State<ResultUser> {
                 child: Text(_displayText3,style: TextStyle(fontFamily: 'Kanit'),),
                 onPressed: () {
                   if (_result == 0) {
-                    _showAlertDialog(context);
+                    _showAlertDialog(context,0);
+                  }else if(_result == 1)
+                  {
+                    _currentState = state.stop;
+                    Navigator.of(context).pop();
+                    Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => HomeUser()));
+                  }else if(_result == 2){
+                    _showAlertDialog(context,1);
                   }
                 },
               ),
@@ -139,12 +182,19 @@ class _ResultUserState extends State<ResultUser> {
     );
   }
 
-  void _showAlertDialog(BuildContext context) {
+  void _showAlertDialog(BuildContext context,int query) {
+    String _displayText;
+    if(query==0)
+    {
+      _displayText = 'ยืนยัน\nจะยกเลิกการเปิดตู้นี้ใช่หรือไม่';
+    }else if(query == 1){
+      _displayText = 'ยืนยัน\nจะเปิดตู้นี้ใช่หรือไม่';
+    }
     showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
             title: Text(
-              'ยืนยัน\nจะยกเลิกการเปิดตู้นี้ใช่หรือไม่',
+              _displayText,
               style: TextStyle(fontFamily: 'Kanit'),
             ),
             content: Row(
@@ -166,10 +216,12 @@ class _ResultUserState extends State<ResultUser> {
                     style: TextStyle(
                         fontFamily: 'Kanit', color: Colors.blueAccent),
                   ),
-                  onPressed: () {
+                  onPressed: () { 
+                    _currentState = state.stop;
                     Navigator.of(context).pop();
                     Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => HomeUser()));
+                    MaterialPageRoute(builder: (context) => HomeUser()));
+
                   },
                 ),
               ],

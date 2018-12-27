@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'Page.dart';
+import '../../model/Model.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -9,7 +10,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-
+  var _userController = new UserController();
   @override
   void dispose() {
     usernameController.dispose();
@@ -26,23 +27,36 @@ class _LoginPageState extends State<LoginPage> {
     margin: const EdgeInsets.only(top: 105),
   );
 
-  void login() {
-    if (usernameController.text == 'user' &&
-        passwordController.text == 'user') {
-      Navigator.push(
+  void login() async {
+    Map result = await _userController.login(usernameController.text,passwordController.text) as Map;
+    if(result['success']==true)
+    {
+      print('Login success');
+      print(result['role']);
+      if(result['role']=='0')
+      {
+         Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => HomeUser(),
         ),
-      );
-    } else if (usernameController.text == 'admin' &&
-        passwordController.text == 'admin') {
-      Navigator.push(
+        );
+      }
+      else
+      {
+         Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => HomeAdmin(),
         ),
-      );
+        );
+      }
+    }
+    else
+    {
+      print('Login failed');
+      usernameController.text = '';
+      passwordController.text = '';
     }
   }
 

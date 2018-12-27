@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
-import '../page/user_result_screen.dart';
-
-void showConfirmationDialog(BuildContext context,String boxNumber,String slotNumber) {
+import '../page/Page.dart';
+import '../../model/Model.dart';
+void showConfirmationDialog(BuildContext context,String boxNumber,String slotNumber,String description) {
     showDialog(
         context: context,
-        builder: (BuildContext context) => UserConfirmationDialog(context,boxNumber,slotNumber));
+        builder: (BuildContext context) => UserConfirmationDialog(context,boxNumber,slotNumber,description));
 }
 
 class UserConfirmationDialog extends StatelessWidget{
-
   String boxNumber;
   String slotNumber;
-
-  UserConfirmationDialog(BuildContext context, String boxNumber,String slotNumber){
+  String description;
+  UserConfirmationDialog(BuildContext context, String boxNumber,String slotNumber,String description){
     this.boxNumber=boxNumber;
     this.slotNumber=slotNumber;
+    this.description = description;
   }
-
+  var _requestController = new RequestController();
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -43,7 +43,9 @@ class UserConfirmationDialog extends StatelessWidget{
                     style: TextStyle(
                         fontFamily: 'Kanit', color: Colors.blueAccent),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
+                    Map result = await _requestController.userSent('user',boxNumber,slotNumber,description,0);
+                    print(result);
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
                     Navigator.push(
@@ -51,7 +53,9 @@ class UserConfirmationDialog extends StatelessWidget{
                         MaterialPageRoute(
                             builder: (context) => ResultUser(
                                 boxNumber: this.boxNumber,
-                                slotNumber: this.slotNumber)));
+                                slotNumber: this.slotNumber,
+                                requestId: result['request_id'],
+                                )));
                   },
                 ),
               ],

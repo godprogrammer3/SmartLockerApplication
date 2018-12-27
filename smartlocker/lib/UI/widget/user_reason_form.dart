@@ -10,7 +10,7 @@ void showUserReasonForm(BuildContext context,String boxNumber,String slotNumber)
 class UserReasonForm extends StatelessWidget {
 
  String boxNumber,slotNumber;
-
+  var _reasonController = new TextEditingController();
   UserReasonForm(BuildContext context,String boxNumber,String slotNumber){
     this.boxNumber=boxNumber;
     this.slotNumber=slotNumber;
@@ -38,7 +38,10 @@ class UserReasonForm extends StatelessWidget {
                 border: InputBorder.none,
                 hintText: 'ระบุ',
                 hintStyle: TextStyle(fontFamily: 'Kanit')),
-            keyboardType: TextInputType.text),
+            keyboardType: TextInputType.text,
+            controller: _reasonController,
+            ),
+            
       ),
       actions: <Widget>[
         FlatButton(
@@ -56,7 +59,7 @@ class UserReasonForm extends StatelessWidget {
             style: TextStyle(fontFamily: 'Kanit', color: Colors.blueAccent),
           ),
           onPressed: () {
-            showConfirmationDialog(context,this.boxNumber,this.slotNumber);
+            showConfirmationDialog(context,this.boxNumber,this.slotNumber,_reasonController.text);
           },
         )
       ],
