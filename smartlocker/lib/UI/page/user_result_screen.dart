@@ -30,6 +30,7 @@ class _ResultUserState extends State<ResultUser> {
   String slotNumber;
   String requestId;
   var _requestController = new RequestController();
+  Timer timerController;
   @override
   void initState(){
     _result = 0;
@@ -41,7 +42,7 @@ class _ResultUserState extends State<ResultUser> {
     _currentState = state.running;
     _countState = 0;
     const millis = const Duration(milliseconds: 500);
-    new Timer.periodic(millis,(Timer t)=>updateState(t));  
+    timerController = new Timer.periodic(millis,(Timer t)=>updateState(t));  
   }
   void onChanged() {
     setState(() {
@@ -161,12 +162,15 @@ class _ResultUserState extends State<ResultUser> {
             children: <Widget>[
               RaisedButton(
                 child: Text(_displayText3,style: TextStyle(fontFamily: 'Kanit'),),
-                onPressed: () {
+                onPressed: () async {
                   if (_result == 0) {
                     _showAlertDialog(context,0);
                   }else if(_result == 1)
                   {
+                    timerController.cancel();
+                    await _requestController.userGet(requestId, 5);
                     _currentState = state.stop;
+                    Navigator.of(context).pop();
                     Navigator.of(context).pop();
                     Navigator.push(context,
                     MaterialPageRoute(builder: (context) => HomeUser()));
@@ -216,8 +220,12 @@ class _ResultUserState extends State<ResultUser> {
                     style: TextStyle(
                         fontFamily: 'Kanit', color: Colors.blueAccent),
                   ),
-                  onPressed: () { 
+                  onPressed: () async { 
+                    await timerController.cancel();
+                    await _requestController.userGet(requestId, 5);
                     _currentState = state.stop;
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
                     Navigator.of(context).pop();
                     Navigator.push(context,
                     MaterialPageRoute(builder: (context) => HomeUser()));

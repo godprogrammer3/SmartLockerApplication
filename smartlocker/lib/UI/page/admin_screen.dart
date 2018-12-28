@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-
+import '../../model/Model.dart';
+import '../widget/Widget.dart';
+import 'dart:async';
 class HomeAdmin extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -12,7 +14,9 @@ class _HomeAdminState extends State<HomeAdmin> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return new WillPopScope(
+    onWillPop: () async => false,
+    child: new Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
         leading: IconButton(
@@ -27,7 +31,10 @@ class _HomeAdminState extends State<HomeAdmin> {
       ),
       drawer: SideMenuAdmin(),
       body: HomeAdminBody(),
-    );
+    ),
+  );
+    
+    
   }
 
 }
@@ -107,20 +114,45 @@ class HomeAdminBody extends StatefulWidget{
 }
 
 class _HomeAdminBodyState extends State<HomeAdminBody>{
- 
+  var _requestController = new RequestController();
   final lockerStatus = List<int>.generate(9, (i)=>0);
   List<Color> lockerColor = List.generate(9, (i){return Colors.green;});
-  void onChanged(index){
-    lockerStatus[index]++;
-    lockerStatus[index]%=3;
-    if(lockerStatus[index] == 0){
-      lockerColor[index] = Colors.green;
-    }else if(lockerStatus[index] == 1)
+  List<String> requestId = List.generate(9,(i)=>'');
+  Timer timerController;
+  bool firstUpdate = false;
+  @override
+  void initState(){
+    const millis = const Duration(milliseconds: 500);
+    timerController = new Timer.periodic(millis,(Timer t)=>updateState(t)); 
+  }
+  updateState(Timer t) async {
+    Map result = await _requestController.adminGet() as Map;
+    for(int i=0;i<9;i++)
     {
-      lockerColor[index] = Colors.yellow;
+      lockerStatus[i]=int.parse(result[i.toString()]['status']);
+      requestId[i]=result[i.toString()]['request_id'];
+      setState(() {
+        if(lockerStatus[i] == 0){
+          lockerColor[i] = Colors.green;
+        }else if(lockerStatus[i] == 1){
+          lockerColor[i] = Colors.yellow;
+        }else{
+          lockerColor[i] = Colors.red;
+        }
+            });
     }
-    else{
-      lockerColor[index] = Colors.red;
+    if(firstUpdate == false){
+     firstUpdate = true;
+    }
+  }
+  void onChanged(index) async {
+    if(firstUpdate == true)
+    {
+      if(lockerStatus[index]==1)
+      {
+        Map result = await _requestController.userGet(requestId[index], 0) as Map;
+        showAdminConfirm(context, 0.toString() , index.toString() , result['user_name'], result['time'], result['reason'],requestId[index]);
+      }
     }
   } 
   @override
