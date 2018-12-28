@@ -93,7 +93,10 @@ class HomeUserBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return 
+
+      Form(
+        child:Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         Row(
@@ -105,7 +108,7 @@ class HomeUserBody extends StatelessWidget {
               padding: EdgeInsets.all(10.0),
               decoration: new BoxDecoration(
                   border: new Border.all(color: Colors.black)),
-              child: TextField(
+              child: TextFormField(
                 style: TextStyle(
                   fontSize: 20.0,
                   color: Colors.black,
@@ -128,7 +131,7 @@ class HomeUserBody extends StatelessWidget {
               padding: EdgeInsets.all(10.0),
               decoration: new BoxDecoration(
                   border: new Border.all(color: Colors.black)),
-              child: TextField(
+              child: TextFormField(
                 style: TextStyle(
                   fontSize: 20.0,
                   color: Colors.black,
@@ -151,12 +154,17 @@ class HomeUserBody extends StatelessWidget {
                 style: TextStyle(fontFamily: 'Kanit'),
               ),
               onPressed: () {
-                showUserReasonForm(context, _inputLockerController.text, _inputSlotController.text);
+                if(_inputLockerController.text!=''&&_inputSlotController.text!=''){
+                  showUserReasonForm(context, _inputLockerController.text, _inputSlotController.text);
+                }
+                else{
+                  showUserInputErrorDialog(context);
+                }
               },
             ),
           ],
         ),
       ],
-    );
+    ));
   }  
 }
