@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../model/Model.dart';
 import '../widget/Widget.dart';
 import 'dart:async';
+
+ Timer timerController;
 class HomeAdmin extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -15,7 +17,10 @@ class _HomeAdminState extends State<HomeAdmin> {
   @override
   Widget build(BuildContext context) {
     return new WillPopScope(
-    onWillPop: () async => false,
+    onWillPop: () async {
+      await timerController.cancel();
+      Navigator.of(context).pop();
+    },
     child: new Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
@@ -118,7 +123,6 @@ class _HomeAdminBodyState extends State<HomeAdminBody>{
   final lockerStatus = List<int>.generate(9, (i)=>0);
   List<Color> lockerColor = List.generate(9, (i){return Colors.green;});
   List<String> requestId = List.generate(9,(i)=>'');
-  Timer timerController;
   bool firstUpdate = false;
   @override
   void initState(){

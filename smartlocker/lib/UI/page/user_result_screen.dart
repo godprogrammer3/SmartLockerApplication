@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'Page.dart';
 import 'dart:async';
 import '../../model/Model.dart';
+Timer userResultTimerController;
 class ResultUser extends StatefulWidget {
   ResultUser({Key key, this.boxNumber,this.slotNumber,this.requestId}) : super(key: key);
   final String boxNumber;
@@ -30,7 +31,6 @@ class _ResultUserState extends State<ResultUser> {
   String slotNumber;
   String requestId;
   var _requestController = new RequestController();
-  Timer timerController;
   @override
   void initState(){
     _result = 0;
@@ -42,7 +42,7 @@ class _ResultUserState extends State<ResultUser> {
     _currentState = state.running;
     _countState = 0;
     const millis = const Duration(milliseconds: 500);
-    timerController = new Timer.periodic(millis,(Timer t)=>updateState(t));  
+    userResultTimerController = new Timer.periodic(millis,(Timer t)=>updateState(t));  
   }
   void onChanged() {
     setState(() {
@@ -78,24 +78,29 @@ class _ResultUserState extends State<ResultUser> {
       {
         _result = 2;
         onChanged();
-        t.cancel();
+        userResultTimerController.cancel();
       }
       else if(result['status']=='-1')
       {
         _result = 1;
         onChanged();
-         t.cancel();
+        userResultTimerController.cancel();
       }
     }
     else
     {
-      t.cancel();
+      userResultTimerController.cancel();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+    onWillPop: () async {
+      await userResultTimerController.cancel();
+      Navigator.of(context).pop();
+    },
+    child: Scaffold(
       appBar: AppBar(),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -183,6 +188,7 @@ class _ResultUserState extends State<ResultUser> {
           ),
         ],
       ),
+    ),
     );
   }
 
@@ -221,9 +227,10 @@ class _ResultUserState extends State<ResultUser> {
                         fontFamily: 'Kanit', color: Colors.blueAccent),
                   ),
                   onPressed: () async { 
-                    await timerController.cancel();
+                    userResultTimerController.cancel();
                     await _requestController.userGet(requestId, 5);
                     _currentState = state.stop;
+                    await _requestController.adminSent(requestId, 5);
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();

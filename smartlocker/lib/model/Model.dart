@@ -55,6 +55,16 @@ class RequestController{
   }
   Future<Map> adminSent(String requestId,int status) async {
     print(requestId);
+    int status2;
+    if(status == 5)
+    {
+      status = 0;
+      status2 = 5;
+    }else if(status == 2){
+      status2 = 1;
+    }else if(status == 0){
+      status2 = -1;
+    }
     String url ='https://webserv.kmitl.ac.th/godprogrammer/box.php';
     Map data = {
       'query':'updateBoxState',
@@ -62,10 +72,8 @@ class RequestController{
       'status':status,
     };
     var response = await httpClient.post(url, body: jsonEncode(data));
-    if(status == 2)
-      status = 1;
-    else if(status == 0)
-      status = -1;
+    
+    
     print('Response status: ${response.statusCode}');
     Map result = jsonDecode(response.body);
     url = 'https://webserv.kmitl.ac.th/godprogrammer/request.php';
