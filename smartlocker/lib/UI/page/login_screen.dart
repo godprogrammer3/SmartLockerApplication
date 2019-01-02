@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'Page.dart';
 import '../../model/Model.dart';
 
@@ -11,6 +12,8 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   var _userController = new UserController();
+  final _formKey = GlobalKey<FormState>();
+
   @override
   void dispose() {
     usernameController.dispose();
@@ -28,35 +31,50 @@ class _LoginPageState extends State<LoginPage> {
   );
 
   void login() async {
-    Map result = await _userController.login(usernameController.text,passwordController.text) as Map;
-    if(result['success']==true)
-    {
-      print('Login success');
-      print(result['role']);
-      if(result['role']=='0')
-      {
-         Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomeUser(),
-        ),
+    Map result = await _userController.login(
+        usernameController.text, passwordController.text) as Map;
+    if (_formKey.currentState.validate()) {
+      if (result['success'] == true) {
+        print('Login success');
+        print(result['role']);
+        if (result['role'] == '0') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HomeUser(),
+            ),
+          );
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HomeAdmin(),
+            ),
+          );
+        }
+      } else {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: new Text("รหัสผ่านไม่ถูกต้อง"),
+              content:
+                  new Text("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง โปรดลองอีกครั้ง"),
+              actions: <Widget>[
+                new FlatButton(
+                  child: new Text("Close"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
         );
+        print('Login failed');
+        usernameController.text = '';
+        passwordController.text = '';
       }
-      else
-      {
-         Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomeAdmin(),
-        ),
-        );
-      }
-    }
-    else
-    {
-      print('Login failed');
-      usernameController.text = '';
-      passwordController.text = '';
     }
   }
 
@@ -75,35 +93,38 @@ class _LoginPageState extends State<LoginPage> {
       body: Center(
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 64),
-          child: ListView(
-            children: <Widget>[
-              logo,
-              username,
-              password,
-              signInButton,
-              RaisedButton(
-                child: Text('ไปหน้าผู้ใช้'),
-                onPressed: (() {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => HomeUser(),
-                    ),
-                  );
-                }),
-              ),
-              RaisedButton(
-                child: Text('ไปหน้าแอดมิน'),
-                onPressed: (() {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => HomeAdmin(),
-                    ),
-                  );
-                }),
-              ),
-            ],
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              children: <Widget>[
+                logo,
+                username,
+                password,
+                signInButton,
+                RaisedButton(
+                  child: Text('ไปหน้าผู้ใช้'),
+                  onPressed: (() {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HomeUser(),
+                      ),
+                    );
+                  }),
+                ),
+                RaisedButton(
+                  child: Text('ไปหน้าแอดมิน'),
+                  onPressed: (() {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HomeAdmin(),
+                      ),
+                    );
+                  }),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -160,6 +181,8 @@ class PasswordTextField extends StatelessWidget {
                     borderSide:
                         BorderSide(width: 1.0, color: Color(0xFFFFDFDFDF))),
               ),
+              validator: validatePassword,
+              obscureText: true,
             ),
           )
         ],
@@ -200,6 +223,7 @@ class UsernameTextField extends StatelessWidget {
                     borderSide:
                         BorderSide(width: 1.0, color: Color(0xFFFFDFDFDF))),
               ),
+              validator: validateUsername,
             ),
           )
         ],
@@ -209,4 +233,26 @@ class UsernameTextField extends StatelessWidget {
       width: 296.23,
     );
   }
+}
+
+String validatePassword(String value) {
+  Pattern pattern = r'^([a-zA-Z0-9]+)$';
+  RegExp regex = new RegExp(pattern);
+  if (value.isEmpty)
+    return 'กรุณากรอกรหัสผ่าน';
+  else if (!regex.hasMatch(value))
+    return 'เป็น a-z A-Z หรือ 0-9 เท่านั้น';
+  else
+    return null;
+}
+
+String validateUsername(String value) {
+  Pattern pattern = r'^([a-zA-Z0-9]+)$';
+  RegExp regex = new RegExp(pattern);
+  if (value.isEmpty)
+    return 'กรุณากรอกชื่อผู้ใช้';
+  else if (!regex.hasMatch(value))
+    return 'เป็น a-z A-Z หรือ 0-9 เท่านั้น';
+  else
+    return null;
 }
