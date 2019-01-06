@@ -12,6 +12,13 @@ class HomeUser extends StatefulWidget {
 class _HomeUserState extends State<HomeUser> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
+  HomeUserBody _homeBody;
+
+  @override
+  void initState() {
+    _homeBody = HomeUserBody();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,7 +35,7 @@ class _HomeUserState extends State<HomeUser> {
         backgroundColor: Colors.deepOrange,
       ),
       drawer: SideMenuUser(),
-      body: HomeUserBody(),
+      body: _homeBody,
     );
   }
 }
@@ -95,83 +102,108 @@ class _HomeUserState extends State<HomeUser> {
 //   }
 // }
 
-class HomeUserBody extends StatelessWidget {
-  var _inputLockerController = new TextEditingController();
-  var _inputSlotController = new TextEditingController();
+class HomeUserBody extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return _HomeUserBodyState();
+  }
+}
+
+class _HomeUserBodyState extends State<HomeUserBody> {
+  static GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
+  Key _k1 = new GlobalKey();
+  Key _k2 = new GlobalKey();
+
+  final TextEditingController _inputLockerController =
+      new TextEditingController();
+  final TextEditingController _inputSlotController =
+      new TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Form(
+        key: _formKey,
         child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Container(
-              margin: EdgeInsets.only(bottom: 10.0),
-              width: 200,
-              padding: EdgeInsets.all(10.0),
-              decoration: new BoxDecoration(
-                  border: new Border.all(color: Colors.black)),
-              child: TextFormField(
-                style: TextStyle(
-                  fontSize: 20.0,
-                  color: Colors.black,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.only(bottom: 10.0),
+                  width: 200,
+                  padding: EdgeInsets.all(10.0),
+                  decoration: new BoxDecoration(
+                      border: new Border.all(color: Colors.black)),
+                  child: TextFormField(
+                    key: _k1,
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      color: Colors.black,
+                    ),
+                    decoration: InputDecoration(
+                        hintText: 'กรอกหมายเลขตู้',
+                        hintStyle: TextStyle(fontFamily: 'Kanit')),
+                    keyboardType:
+                        TextInputType.numberWithOptions(signed: false),
+                    controller: _inputLockerController,
+                    validator: (value) {
+                      if (value.isEmpty && int.tryParse(value) == null) {
+                        return 'กรูณากรอกหมายเลขให้ถูกต้อง';
+                      }
+                    },
+                  ),
                 ),
-                decoration: InputDecoration(
-                    hintText: 'กรอกหมายเลขตู้',
-                    hintStyle: TextStyle(fontFamily: 'Kanit')),
-                keyboardType: TextInputType.numberWithOptions(signed: false),
-                controller: _inputLockerController,
-              ),
+              ],
             ),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Container(
-              margin: EdgeInsets.only(bottom: 10.0),
-              width: 200,
-              padding: EdgeInsets.all(10.0),
-              decoration: new BoxDecoration(
-                  border: new Border.all(color: Colors.black)),
-              child: TextFormField(
-                style: TextStyle(
-                  fontSize: 20.0,
-                  color: Colors.black,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.only(bottom: 10.0),
+                  width: 200,
+                  padding: EdgeInsets.all(10.0),
+                  decoration: new BoxDecoration(
+                      border: new Border.all(color: Colors.black)),
+                  child: TextFormField(
+                    key: _k2,
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      color: Colors.black,
+                    ),
+                    decoration: InputDecoration(
+                        hintText: 'กรอกหมายเลขช่อง',
+                        hintStyle: TextStyle(fontFamily: 'Kanit')),
+                    keyboardType:
+                        TextInputType.numberWithOptions(signed: false),
+                    controller: _inputSlotController,
+                    validator: (value) {
+                      if (value.isEmpty && int.tryParse(value) == null) {
+                        return 'กรูณากรอกหมายเลขให้ถูกต้อง';
+                      }
+                    },
+                  ),
                 ),
-                decoration: InputDecoration(
-                    hintText: 'กรอกหมายเลขช่อง',
-                    hintStyle: TextStyle(fontFamily: 'Kanit')),
-                keyboardType: TextInputType.numberWithOptions(signed: false),
-                controller: _inputSlotController,
-              ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                RaisedButton(
+                  child: Text(
+                    'ขอเปิดตู้',
+                    style: TextStyle(fontFamily: 'Kanit'),
+                  ),
+                  onPressed: () {
+                    if (_formKey.currentState.validate()) {
+                      showUserReasonForm(context, _inputLockerController.text,
+                          _inputSlotController.text);
+                    }
+                  },
+                ),
+              ],
             ),
           ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            RaisedButton(
-              child: Text(
-                'ขอเปิดตู้',
-                style: TextStyle(fontFamily: 'Kanit'),
-              ),
-              onPressed: () {
-                if (_inputLockerController.text != '' &&
-                    _inputSlotController.text != '') {
-                  showUserReasonForm(context, _inputLockerController.text,
-                      _inputSlotController.text);
-                } else {
-                  showUserInputErrorDialog(context);
-                }
-              },
-            ),
-          ],
-        ),
-      ],
-    ));
+        ));
   }
 }
