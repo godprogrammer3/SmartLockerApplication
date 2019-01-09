@@ -32,7 +32,9 @@ class _HomeAdminState extends State<HomeAdmin> {
               Icons.menu,
               size: 30.0,
             ),
-            onPressed: () => _scaffoldKey.currentState.openDrawer(),
+            onPressed: () async {
+               _scaffoldKey.currentState.openDrawer();
+            },
           ),
           backgroundColor: Colors.deepOrange,
         ),

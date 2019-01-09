@@ -61,8 +61,7 @@ flutter:
       - asset: fonts/Kanit-Italic.ttf
         style: italic
       - asset: fonts/kanit-Bold.ttf
-        weight: 700
-        
+        weight: 700  
   #   - family: Trajan Pro
   #     fonts:
   #       - asset: fonts/TrajanPro.ttf

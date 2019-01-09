@@ -48,6 +48,7 @@ class HistoryBodyState extends State<HistoryBody> {
   String _currentItem;
 
   void backToAdminHome() {
+    Navigator.of(context).pop();
     Navigator.push(
         context,
         MaterialPageRoute(

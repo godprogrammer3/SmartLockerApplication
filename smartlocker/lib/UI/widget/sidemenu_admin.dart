@@ -41,6 +41,7 @@ class SideMenuAdmin extends StatelessWidget {
           ListTile(
             onTap: () {
               // go to history page
+              //Navigator.of(context).pop();
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -60,6 +61,9 @@ class SideMenuAdmin extends StatelessWidget {
           ),
           ListTile(
             onTap: () {
+              timerController.cancel();
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
               Navigator.push(
                 context,
                 MaterialPageRoute(

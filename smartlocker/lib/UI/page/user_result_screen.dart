@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'Page.dart';
 import 'dart:async';
 import '../../model/Model.dart';
+import 'package:flutter_svg/svg.dart';
 Timer userResultTimerController;
 class ResultUser extends StatefulWidget {
   ResultUser({Key key, this.boxNumber,this.slotNumber,this.requestId}) : super(key: key);
@@ -32,7 +33,8 @@ class _ResultUserState extends State<ResultUser> {
   String requestId;
   var _requestController = new RequestController();
   @override
-  void initState(){
+  void initState() {
+
     _result = 0;
     _showIcon = Icons.query_builder;
     _iconColor = Colors.yellow;
@@ -96,21 +98,28 @@ class _ResultUserState extends State<ResultUser> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-    onWillPop: () async {
-      await userResultTimerController.cancel();
+    onWillPop: () {
+      userResultTimerController.cancel();
       Navigator.of(context).pop();
     },
     child: Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        leading: new IconButton(
+          icon: new Icon(Icons.arrow_back),
+          onPressed: (){
+            userResultTimerController.cancel();
+            Navigator.pop(context);}
+        ),
+      ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
             Icon(
               _showIcon,
-              size: 160.0,
-              color: _iconColor,
-            ),
+              color:_iconColor,
+              size: 120,
+              ),
           ]),
           Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
             Column(
