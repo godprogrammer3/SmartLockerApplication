@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../page/Page.dart';
 
+
 class SideMenuUser extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -40,12 +41,15 @@ class SideMenuUser extends StatelessWidget {
           ),
           ListTile(
             onTap: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => LoginPage(),
                 ),
-              );
+              );           
+              
             }, //get back to login screen
             leading: Icon(
               Icons.exit_to_app,
