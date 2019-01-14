@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widget/Widget.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import '../page/Page.dart';
 
 class HomeUser extends StatefulWidget {
@@ -14,9 +15,25 @@ class _HomeUserState extends State<HomeUser> {
 
   HomeUserBody _homeBody;
 
+  FirebaseMessaging _firebaseMessaging= new FirebaseMessaging();
+
+
   @override
   void initState() {
+    super.initState();
     _homeBody = HomeUserBody();
+    _firebaseMessaging.configure(
+      onMessage: (Map<String,dynamic> message){
+        print('on message $message');
+      },
+      onLaunch: (Map<String,dynamic> message){
+        print('on launch $message');
+      },
+      onResume: (Map<String,dynamic> message){
+        print('on resume $message');
+      }
+    );
+    _firebaseMessaging.getToken().then((token){print('token:'+token);});
   }
 
   @override
