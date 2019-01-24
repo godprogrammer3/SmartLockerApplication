@@ -41,8 +41,8 @@ class SideMenuUser extends StatelessWidget {
           ),
           ListTile(
             onTap: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
               Navigator.push(
                 context,
                 MaterialPageRoute(

@@ -21,7 +21,7 @@ class _HomeAdminState extends State<HomeAdmin> {
     return new WillPopScope(
       onWillPop: () async {
         await timerController.cancel();
-        Navigator.of(context).pop();
+        await Navigator.of(context).pop();
       },
       child: new Scaffold(
         key: _scaffoldKey,
@@ -44,96 +44,15 @@ class _HomeAdminState extends State<HomeAdmin> {
     );
   }
 }
-//ย้ายไปอยู่ใน widget นะ แต่ถ้าอยากให้อยู่ในนี้เอาคอมเม้นออกก็ได้
-
-// class SideMenuAdmin extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Drawer(
-//       child: ListView(
-//         padding: EdgeInsets.zero,
-//         children: <Widget>[
-//           DrawerHeader(
-//             child: Align(
-//                 alignment: Alignment.centerLeft,
-//                 child: Row(
-//                   children: <Widget>[
-//                     Container(
-//                         width: 100.0,
-//                         height: 100.0,
-//                         decoration: BoxDecoration(
-//                             shape: BoxShape.circle, color: Colors.white),
-//                         child: Icon(
-//                           Icons.person,
-//                           size: 60.0,
-//                         )),
-//                     Padding(
-//                       padding: EdgeInsets.only(left: 15.0),
-//                       child: Text(
-//                         'นายแอดมิน',
-//                         style: TextStyle(
-//                             color: Colors.white,
-//                             fontSize: 16.0,
-//                             fontFamily: 'Kanit'),
-//                       ),
-//                     )
-//                   ],
-//                 )),
-//             decoration: BoxDecoration(
-//               color: Colors.deepOrange,
-//             ),
-//           ),
-//           ListTile(
-//             onTap: () {
-//               // go to history page
-//               Navigator.push(
-//                 context,
-//                 MaterialPageRoute(
-//                   builder: (context) => History(),
-//                 ),
-//               );
-             
-//             },
-//             leading: Icon(
-//               Icons.history,
-//               size: 40.0,
-//             ),
-//             title: Text(
-//               "ประวัติการขอเปิดตู้",
-//               style: TextStyle(fontSize: 18.0, fontFamily: 'Kanit'),
-//             ),
-//           ),
-//           ListTile(
-//             onTap: () {
-//               Navigator.push(
-//                 context,
-//                 MaterialPageRoute(
-//                   builder: (context) => LoginPage(),
-//                 ),
-//               );
-//               //Logout naja
-//             },
-//             leading: Icon(
-//               Icons.exit_to_app,
-//               size: 40.0,
-//             ),
-//             title: Text(
-//               "ออกจากระบบ",
-//               style: TextStyle(fontSize: 18.0, fontFamily: 'Kanit'),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
 class HomeAdminBody extends StatefulWidget {
   _HomeAdminBodyState createState() => _HomeAdminBodyState();
 }
 
 class _HomeAdminBodyState extends State<HomeAdminBody> {
   var _requestController = new RequestController();
+  var _lockerController = new LockerController();
+  var _userController = new UserController();
+  String token = '';
   final lockerStatus = List<int>.generate(9, (i) => 0);
   List<Color> lockerColor = List.generate(9, (i) {
     return Colors.green;
@@ -141,25 +60,52 @@ class _HomeAdminBodyState extends State<HomeAdminBody> {
   List<String> requestId = List.generate(9, (i) => '');
   bool firstUpdate = false;
   @override
-  void initState() {
+  void initState(){
     const millis = const Duration(milliseconds: 500);
     timerController = new Timer.periodic(millis, (Timer t) => updateState(t));
+
   }
 
   updateState(Timer t) async {
-    Map result = await _requestController.adminGet() as Map;
-    for (int i = 0; i < 9; i++) {
-      lockerStatus[i] = int.parse(result[i.toString()]['status']);
-      requestId[i] = result[i.toString()]['request_id'];
-      setState(() {
-        if (lockerStatus[i] == 0) {
-          lockerColor[i] = Colors.green;
-        } else if (lockerStatus[i] == 1) {
-          lockerColor[i] = Colors.yellow;
-        } else {
-          lockerColor[i] = Colors.red;
+    if(token==''){
+      Map userLoginResult = await _userController.login('admin', 'admin') as Map;
+      if(userLoginResult['success']==true){
+        //print(userLoginResult['user']);
+        token = userLoginResult['token'];
+        //print(token);
+      }else{
+        //print(userLoginResult['error']);
+      }
+    }
+    for(int i=1 ; i<=9 ; i++){
+      Map requestFilterResult = await _requestController.filterRequest(token,i) as Map;
+      //print(requestFilterResult['data']);
+      if(requestFilterResult['success']==true)
+      {
+        if(requestFilterResult['data'].toString()=='[]'){
+          Map lockerFilterResult = await _lockerController.fillterLocker(token,i) as Map;
+         
+          if(lockerFilterResult['data'][0]['state']=='close'){
+            setState(() {
+               lockerColor[i-1] = Colors.green;     
+               lockerStatus[i-1] = 0;    
+                    });
+          }else{
+             setState(() {
+               lockerColor[i-1] = Colors.red;
+               lockerStatus[i-1] = 1;            
+                    });
+          }
+        }else{
+           setState(() {
+               lockerColor[i-1] = Colors.yellow;    
+               lockerStatus[i-1] = 2;        
+                    });
         }
-      });
+      }
+      else{
+        print(requestFilterResult['error']);
+      }
     }
     if (firstUpdate == false) {
       firstUpdate = true;
@@ -168,19 +114,30 @@ class _HomeAdminBodyState extends State<HomeAdminBody> {
 
   void onChanged(index) async {
     if (firstUpdate == true) {
-      if (lockerStatus[index] == 1) {
-        Map result =
-            await _requestController.userGet(requestId[index], 0) as Map;
+      if (lockerStatus[index] == 2) {
+        Map requestFilterResult = await _requestController.filterRequest(token,index+1) as Map;
+        //print(lockerFilterResult['data'][0]['requestUserId']);
+        Map userFilterResult = await _userController.filterUser(token,  requestFilterResult['data'][0]['requestUserId']) as Map;
+        //print(userFilterResult['data']['username']); 
+        //print( userFilterResult['error']);
+        
         showAdminConfirm(
             context,
-            0.toString(),
-            index.toString(),
-            result['user_name'],
-            result['time'],
-            result['reason'],
-            requestId[index]);
+            token,
+            userFilterResult['data']['username'],
+            requestFilterResult['data'][0]['createdAt'],
+            requestFilterResult['data'][0]['reason'],
+            requestFilterResult['data'][0]['id'],
+            index+1
+            );
+        
       }
     }
+  }
+
+  @override
+  void dispose(){
+    super.dispose();
   }
 
   @override
@@ -192,9 +149,7 @@ class _HomeAdminBodyState extends State<HomeAdminBody> {
         children: List.generate(9, (index) {
           return GestureDetector(
               onTap: () {
-                setState(() {
                   onChanged(index);
-                });
               },
               child: Column(
                 children: <Widget>[
@@ -204,7 +159,7 @@ class _HomeAdminBodyState extends State<HomeAdminBody> {
                     color: lockerColor[index],
                   ),
                   Text(
-                    index.toString(),
+                    (index+1).toString(),
                     style: TextStyle(
                       fontSize: 20.0,
                     ),

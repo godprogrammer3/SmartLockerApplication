@@ -15,18 +15,14 @@ class _HistoryState extends State<History> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      appBar: AppBar(
-        leading: IconButton(
-          alignment: Alignment.centerLeft,
-          icon: Icon(
-            Icons.menu,
-            size: 30.0,
-          ),
-          onPressed: () => _scaffoldKey.currentState.openDrawer(),
+      appBar:  AppBar(
+        leading: new IconButton(
+          icon: new Icon(Icons.arrow_back),
+          onPressed: (){
+            Navigator.pop(context);
+            }
         ),
-        backgroundColor: Colors.deepOrange,
       ),
-      drawer: SideMenuAdmin(),
       body: HistoryBody(),
     );
   }
@@ -84,7 +80,7 @@ class HistoryBodyState extends State<HistoryBody> {
           child: ListView(
             children: <Widget>[
               //--------------------------------
-              _backIcon,
+              //_backIcon,
               //--------------------------------
               Row(
                 children: <Widget>[

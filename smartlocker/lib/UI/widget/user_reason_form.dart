@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'Widget.dart';
-
+import './../../model/Model.dart';
 
 void showUserReasonForm(BuildContext context,String boxNumber,String slotNumber) {
   showDialog(
@@ -8,8 +8,10 @@ void showUserReasonForm(BuildContext context,String boxNumber,String slotNumber)
 }
 
 class UserReasonForm extends StatelessWidget {
-
+ var _userController = new UserController();
  String boxNumber,slotNumber;
+ String token = '';
+ int userId ;
   var _reasonController = new TextEditingController();
   UserReasonForm(BuildContext context,String boxNumber,String slotNumber){
     this.boxNumber=boxNumber;
@@ -58,8 +60,18 @@ class UserReasonForm extends StatelessWidget {
             'ส่งคำข้อร้อง',
             style: TextStyle(fontFamily: 'Kanit', color: Colors.blueAccent),
           ),
-          onPressed: () {
-            showConfirmationDialog(context,this.boxNumber,this.slotNumber,_reasonController.text);
+          onPressed: () async {
+            Map userLoginResult = await _userController.login('user', 'user') as Map;
+            if(userLoginResult['success']==true){
+              //print(userLoginResult['user']);
+              token = userLoginResult['token'];
+              userId = userLoginResult['user']['id'];
+              print(userId);
+              //print(token);
+            }else{
+              //print(userLoginResult['error']);
+            }
+            showConfirmationDialog(context,token,userId,this.boxNumber,this.slotNumber,_reasonController.text);
           },
         )
       ],

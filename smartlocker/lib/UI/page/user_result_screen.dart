@@ -5,13 +5,14 @@ import '../../model/Model.dart';
 import 'package:flutter_svg/svg.dart';
 Timer userResultTimerController;
 class ResultUser extends StatefulWidget {
-  ResultUser({Key key, this.boxNumber,this.slotNumber,this.requestId}) : super(key: key);
+  ResultUser({Key key, this.token,this.userId, this.boxNumber,this.slotNumber}) : super(key: key);
   final String boxNumber;
   final String slotNumber;
-  final String requestId;
+  final String token;
+  final int userId;
   @override
   State<StatefulWidget> createState() {
-    return _ResultUserState(boxNumber: boxNumber,slotNumber: slotNumber,requestId:requestId);
+    return _ResultUserState(boxNumber: boxNumber,slotNumber: slotNumber,token:token,userId:userId);
   }
 }
 enum state{
@@ -20,18 +21,20 @@ enum state{
 }
 class _ResultUserState extends State<ResultUser> {
   int _result;
+  int userId;
+  int requestId;
   state _currentState;
-  int _countState;
   IconData _showIcon;
   Color _iconColor ;
   String _displayText1 ;
   String _displayText2;
   String _displayText3;
-  _ResultUserState({Key key, this.boxNumber,this.slotNumber,this.requestId});
+  _ResultUserState({Key key, this.boxNumber,this.slotNumber,this.token,this.userId});
   String boxNumber;
   String slotNumber;
-  String requestId;
+  String token;
   var _requestController = new RequestController();
+  var _userController = new UserController();
   @override
   void initState() {
 
@@ -42,7 +45,6 @@ class _ResultUserState extends State<ResultUser> {
     _displayText2 = 'กรุณารอการอนุมัติจากแอดมิน';
     _displayText3 = 'ยกเลิกขอเปิดตู้';
     _currentState = state.running;
-    _countState = 0;
     const millis = const Duration(milliseconds: 500);
     userResultTimerController = new Timer.periodic(millis,(Timer t)=>updateState(t));  
   }
@@ -73,20 +75,21 @@ class _ResultUserState extends State<ResultUser> {
   updateState(Timer t) async {
     if(_currentState == state.running)
     {
-      print(_countState++);
-      Map result = await _requestController.userGet(requestId,0) as Map;
-      print(result);
-      if(result['status']=='1')
-      {
-        _result = 2;
-        onChanged();
-        userResultTimerController.cancel();
+      if(requestId==null){
+        Map requestIdResult = await _requestController.filterRequest(token,int.parse(slotNumber)) as Map;
+        requestId =requestIdResult['data'][0]['id'];
       }
-      else if(result['status']=='-1')
-      {
+      Map result = await _userController.listRequest(token);
+      List data = result['data'];
+      if(data.last['state']=='wait'){
+        _result = 0;
+        onChanged();
+      }else if(data.last['state']=='reject'){
         _result = 1;
         onChanged();
-        userResultTimerController.cancel();
+      }else if(data.last['state']=='approve'){
+        _result = 2;
+        onChanged();
       }
     }
     else
@@ -181,9 +184,7 @@ class _ResultUserState extends State<ResultUser> {
                     _showAlertDialog(context,0);
                   }else if(_result == 1)
                   {
-                    timerController.cancel();
-                    await _requestController.userGet(requestId, 5);
-                    _currentState = state.stop;
+                    await userResultTimerController.cancel();
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
                     Navigator.push(context,
@@ -236,16 +237,16 @@ class _ResultUserState extends State<ResultUser> {
                         fontFamily: 'Kanit', color: Colors.blueAccent),
                   ),
                   onPressed: () async { 
+                    
                     userResultTimerController.cancel();
-                    await _requestController.userGet(requestId, 5);
-                    _currentState = state.stop;
-                    await _requestController.adminSent(requestId, 5);
+                    if(query==0)
+                      await _requestController.update(token,requestId, 'cancel');
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
                     Navigator.push(context,
                     MaterialPageRoute(builder: (context) => HomeUser()));
-
+                    
                   },
                 ),
               ],

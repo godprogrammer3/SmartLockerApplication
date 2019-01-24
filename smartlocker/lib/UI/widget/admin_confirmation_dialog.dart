@@ -2,26 +2,28 @@ import 'package:flutter/material.dart';
 import 'Widget.dart';
 import '../../model/Model.dart';
 
-void showAdminConfirm(BuildContext context,String boxNumber,String slotNumber,String userName,String time,String reason,String requestId) {
+void showAdminConfirm(BuildContext context,String token ,String userName,String time,String reason,int requestId,int lockerId) {
   showDialog(
-      context: context, builder: (BuildContext context) => AddminConfirm(context,boxNumber,slotNumber,userName,time,reason,requestId));
+      context: context, builder: (BuildContext context) => AddminConfirm(context,token,userName,time,reason,requestId,lockerId));
 }
 
 class AddminConfirm extends StatelessWidget {
-  String boxNumber,slotNumber,userName,time,reason,requestId;
-  AddminConfirm(BuildContext context,String boxNumber,String slotNumber,String userName,String time,String reason,String requestId){
-    this.boxNumber=boxNumber;
-    this.slotNumber=slotNumber;
+  String token,userName,time,reason;
+  int requestId,lockerId;
+  AddminConfirm(BuildContext context,token,String userName,String time,String reason,int requestId,int lockerId){
+    this.token = token;
     this.userName = userName;
     this.time = time;
     this.reason = reason;
     this.requestId = requestId;
+    this.lockerId = lockerId;
   }
   var _requestController = new RequestController();
+  var _lockerController = new LockerController();
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('ชื่อผู้ใช้ : '+userName+'\n'+'เวลา : '+time+'\n'+'เหตุผลในการเปิดตู้ : ',
+      title: Text('ชื่อผู้ใช้ : '+userName+'\n'+'เวลา : '+time.substring(0,10)+" "+time.substring(11,19)+'\n'+'เหตุผลในการเปิดตู้ : ',
         style: TextStyle(fontFamily: 'Kanit'),
       ),
       content: Container(
@@ -39,9 +41,16 @@ class AddminConfirm extends StatelessWidget {
             'ไม่อนุมัติ',
             style:TextStyle(color: Colors.red,fontFamily: 'Kanit'),
           ),
-          onPressed: () {
-            _requestController.adminSent(requestId, 0);
+          onPressed: () async {
+
+            Map requestResult = await _requestController.update(token,requestId,'reject') as Map;
+            if(requestResult['success']== true){
+              print(requestResult['message']);
+            }else{
+              print(requestResult['error']);
+            }
             Navigator.of(context).pop();
+            
           },
         ),
         FlatButton(
@@ -49,8 +58,19 @@ class AddminConfirm extends StatelessWidget {
             'อนุมัติ',
             style:TextStyle(color: Colors.green,fontFamily: 'Kanit'),
           ),
-          onPressed: () {
-            _requestController.adminSent(requestId, 2);
+          onPressed: () async {
+            Map requestResult = await _requestController.update(token,requestId,'approve') as Map;
+            if(requestResult['success']== true){
+              //print(requestResult['message']);
+            }else{
+              //print(requestResult['error']);
+            }
+            Map lockerResult = await _lockerController.update(token,lockerId,'open') as Map;
+            if(lockerResult['success']== true){
+              print(lockerResult['message']);
+            }else{
+              print(lockerResult['error']);
+            }
             Navigator.of(context).pop();
           },
         ),

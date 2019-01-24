@@ -60,8 +60,8 @@ class SideMenuAdmin extends StatelessWidget {
             ),
           ),
           ListTile(
-            onTap: () {
-              timerController.cancel();
+            onTap: () async {
+              await timerController.cancel();
               Navigator.of(context).pop();
               Navigator.of(context).pop();
               Navigator.push(
