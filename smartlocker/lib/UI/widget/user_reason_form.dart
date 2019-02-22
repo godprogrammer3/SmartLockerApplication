@@ -2,20 +2,21 @@ import 'package:flutter/material.dart';
 import 'Widget.dart';
 import './../../model/Model.dart';
 
-void showUserReasonForm(BuildContext context,String boxNumber,String slotNumber) {
+void showUserReasonForm(BuildContext context,String boxNumber,String slotNumber,String token) {
   showDialog(
-      context: context, builder: (BuildContext context) => UserReasonForm(context,boxNumber,slotNumber));
+      context: context, builder: (BuildContext context) => UserReasonForm(context,boxNumber,slotNumber,token));
 }
 
 class UserReasonForm extends StatelessWidget {
- var _userController = new UserController();
+ var _requestController = new RequestController();
  String boxNumber,slotNumber;
  String token = '';
  int userId ;
   var _reasonController = new TextEditingController();
-  UserReasonForm(BuildContext context,String boxNumber,String slotNumber){
+  UserReasonForm(BuildContext context,String boxNumber,String slotNumber,String token){
     this.boxNumber=boxNumber;
     this.slotNumber=slotNumber;
+    this.token = token;
   }
 
   @override
@@ -61,17 +62,7 @@ class UserReasonForm extends StatelessWidget {
             style: TextStyle(fontFamily: 'Kanit', color: Colors.blueAccent),
           ),
           onPressed: () async {
-            Map userLoginResult = await _userController.login('user', 'user') as Map;
-            if(userLoginResult['success']==true){
-              //print(userLoginResult['user']);
-              token = userLoginResult['token'];
-              userId = userLoginResult['user']['id'];
-              print(userId);
-              //print(token);
-            }else{
-              //print(userLoginResult['error']);
-            }
-            showConfirmationDialog(context,token,userId,this.boxNumber,this.slotNumber,_reasonController.text);
+            showConfirmationDialog(context,token,this.boxNumber,this.slotNumber,_reasonController.text);
           },
         )
       ],

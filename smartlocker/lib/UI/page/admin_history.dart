@@ -48,7 +48,7 @@ class HistoryBodyState extends State<HistoryBody> {
     Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => HomeAdmin(),
+          builder: (context) => HomeAdmin("token"),
         ));
   }
 

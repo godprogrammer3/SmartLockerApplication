@@ -67,7 +67,7 @@ class _ResultUserState extends State<ResultUser> {
         _iconColor = Colors.green;
         _displayText1 = 'ถูกอนุมัติแล้ว';
         _displayText2 = '';
-        _displayText3 = 'เปิดตู้';
+        _displayText3 = 'กลับสู่หน้าแรก';
       }
     });
   }
@@ -75,19 +75,15 @@ class _ResultUserState extends State<ResultUser> {
   updateState(Timer t) async {
     if(_currentState == state.running)
     {
-      if(requestId==null){
-        Map requestIdResult = await _requestController.filterRequest(token,int.parse(slotNumber)) as Map;
-        requestId =requestIdResult['data'][0]['id'];
-      }
-      Map result = await _userController.listRequest(token);
-      List data = result['data'];
-      if(data.last['state']=='wait'){
+      Map result = await _userController.getRecentRequest(token);
+      requestId = result['id'];
+      if(result['state']=='wait'){
         _result = 0;
         onChanged();
-      }else if(data.last['state']=='reject'){
+      }else if(result['state']=='reject'){
         _result = 1;
         onChanged();
-      }else if(data.last['state']=='approve'){
+      }else if(result['state']=='approve'){
         _result = 2;
         onChanged();
       }
@@ -101,8 +97,8 @@ class _ResultUserState extends State<ResultUser> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-    onWillPop: () {
-      userResultTimerController.cancel();
+    onWillPop: () async {
+      await userResultTimerController.cancel();
       Navigator.of(context).pop();
     },
     child: Scaffold(
@@ -181,16 +177,13 @@ class _ResultUserState extends State<ResultUser> {
                 child: Text(_displayText3,style: TextStyle(fontFamily: 'Kanit'),),
                 onPressed: () async {
                   if (_result == 0) {
-                    _showAlertDialog(context,0);
-                  }else if(_result == 1)
-                  {
+                    _showAlertDialog(context);
+                  }else{
                     await userResultTimerController.cancel();
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
                     Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => HomeUser()));
-                  }else if(_result == 2){
-                    _showAlertDialog(context,1);
+                    MaterialPageRoute(builder: (context) => HomeUser(token)));
                   }
                 },
               ),
@@ -202,19 +195,12 @@ class _ResultUserState extends State<ResultUser> {
     );
   }
 
-  void _showAlertDialog(BuildContext context,int query) {
-    String _displayText;
-    if(query==0)
-    {
-      _displayText = 'ยืนยัน\nจะยกเลิกการเปิดตู้นี้ใช่หรือไม่';
-    }else if(query == 1){
-      _displayText = 'ยืนยัน\nจะเปิดตู้นี้ใช่หรือไม่';
-    }
+  void _showAlertDialog(BuildContext context) {
     showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
             title: Text(
-              _displayText,
+              'ยืนยัน\nจะยกเลิกการเปิดตู้นี้ใช่หรือไม่',
               style: TextStyle(fontFamily: 'Kanit'),
             ),
             content: Row(
@@ -237,15 +223,13 @@ class _ResultUserState extends State<ResultUser> {
                         fontFamily: 'Kanit', color: Colors.blueAccent),
                   ),
                   onPressed: () async { 
-                    
-                    userResultTimerController.cancel();
-                    if(query==0)
-                      await _requestController.update(token,requestId, 'cancel');
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop();
+                    await userResultTimerController.cancel();
+                    await _requestController.update(token,requestId, 'cancel');
+                    await Navigator.of(context).pop();
+                    await Navigator.of(context).pop();
+                    await Navigator.of(context).pop();
                     Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => HomeUser()));
+                    MaterialPageRoute(builder: (context) => HomeUser(token)));
                     
                   },
                 ),

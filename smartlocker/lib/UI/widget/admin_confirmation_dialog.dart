@@ -2,21 +2,22 @@ import 'package:flutter/material.dart';
 import 'Widget.dart';
 import '../../model/Model.dart';
 
-void showAdminConfirm(BuildContext context,String token ,String userName,String time,String reason,int requestId,int lockerId) {
+void showAdminConfirm(BuildContext context,String token ,String userName,String time,String reason,int requestId,int lockerNumber,int boxNumber) {
   showDialog(
-      context: context, builder: (BuildContext context) => AddminConfirm(context,token,userName,time,reason,requestId,lockerId));
+      context: context, builder: (BuildContext context) => AddminConfirm(context,token,userName,time,reason,requestId,lockerNumber,boxNumber));
 }
 
 class AddminConfirm extends StatelessWidget {
   String token,userName,time,reason;
-  int requestId,lockerId;
-  AddminConfirm(BuildContext context,token,String userName,String time,String reason,int requestId,int lockerId){
+  int requestId,lockerNumber,boxNumber;
+  AddminConfirm(BuildContext context,token,String userName,String time,String reason,int requestId,int lockerNumber,int boxNumber){
     this.token = token;
     this.userName = userName;
     this.time = time;
     this.reason = reason;
     this.requestId = requestId;
-    this.lockerId = lockerId;
+    this.lockerNumber = lockerNumber;
+    this.boxNumber = boxNumber;
   }
   var _requestController = new RequestController();
   var _lockerController = new LockerController();
@@ -49,6 +50,7 @@ class AddminConfirm extends StatelessWidget {
             }else{
               print(requestResult['error']);
             }
+            
             Navigator.of(context).pop();
             
           },
@@ -61,13 +63,13 @@ class AddminConfirm extends StatelessWidget {
           onPressed: () async {
             Map requestResult = await _requestController.update(token,requestId,'approve') as Map;
             if(requestResult['success']== true){
-              //print(requestResult['message']);
+              print(requestResult);
             }else{
-              //print(requestResult['error']);
+              print(requestResult['error']);
             }
-            Map lockerResult = await _lockerController.update(token,lockerId,'open') as Map;
+            Map lockerResult = await _lockerController.update(token,lockerNumber,boxNumber,'open') as Map;
             if(lockerResult['success']== true){
-              print(lockerResult['message']);
+              print(lockerResult);
             }else{
               print(lockerResult['error']);
             }

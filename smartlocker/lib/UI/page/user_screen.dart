@@ -1,27 +1,33 @@
 import 'package:flutter/material.dart';
 import '../widget/Widget.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import '../page/Page.dart';
-
+import '../../model/Model.dart';
+import './Page.dart';
 class HomeUser extends StatefulWidget {
+  String token;
+  HomeUser(this.token);
   @override
   State<StatefulWidget> createState() {
-    return _HomeUserState();
+    return _HomeUserState(token);
   }
 }
 
 class _HomeUserState extends State<HomeUser> {
+  _HomeUserState(this.token);
+  String token;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-
   HomeUserBody _homeBody;
-
   FirebaseMessaging _firebaseMessaging= new FirebaseMessaging();
-
-
+  var _userController = new UserController();
+  var _requestController = new RequestController();
+  
+  int requestId;
+  int userId;
   @override
   void initState() {
+    prepare();
     super.initState();
-    _homeBody = HomeUserBody();
+    _homeBody = HomeUserBody(token);
     _firebaseMessaging.configure(
       onMessage: (Map<String,dynamic> message){
         print('on message $message');
@@ -34,6 +40,21 @@ class _HomeUserState extends State<HomeUser> {
       }
     );
     _firebaseMessaging.getToken().then((token){print('token:'+token);});
+
+  }
+
+  void prepare() async {
+    Map userRecentRequest = await _userController.getRecentRequest(token) as Map;
+    if(userRecentRequest['state'] == 'approve' && false){
+      Navigator.of(context).pop();
+      Navigator.of(context).pop();
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => UserCancel(token: this.token,requestId: this.requestId),
+        )
+      );
+    }
   }
 
   @override
@@ -52,14 +73,16 @@ class _HomeUserState extends State<HomeUser> {
         backgroundColor: Colors.deepOrange,
       ),
       drawer: SideMenuUser(),
-      body: _homeBody,
+      body:_homeBody,
     );
   }
 }
 class HomeUserBody extends StatefulWidget {
+  String token;
+  HomeUserBody(this.token);
   @override
   State<StatefulWidget> createState() {
-    return _HomeUserBodyState();
+    return _HomeUserBodyState(token);
   }
 }
 
@@ -67,7 +90,8 @@ class _HomeUserBodyState extends State<HomeUserBody> {
   static GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   Key _k1 = new GlobalKey();
   Key _k2 = new GlobalKey();
-
+  String token;
+  _HomeUserBodyState(this.token);
   final TextEditingController _inputLockerController =
       new TextEditingController();
   final TextEditingController _inputSlotController =
@@ -151,7 +175,7 @@ class _HomeUserBodyState extends State<HomeUserBody> {
                   onPressed: () {
                     if (_formKey.currentState.validate()) {
                       showUserReasonForm(context, _inputLockerController.text,
-                          _inputSlotController.text);
+                          _inputSlotController.text,token);
                     }
                   },
                 ),
