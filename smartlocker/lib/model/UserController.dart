@@ -4,6 +4,7 @@ import 'package:http/http.dart';
 import 'dart:io';
 class UserController{
   final httpClient = new Client();
+
    Future<Map> filterUser(String token,int userId) async {
     String url ='http://smart-locker-227608.appspot.com/v1/users/'+userId.toString();
     var response = await httpClient.get(url,  headers: {HttpHeaders.authorizationHeader: token},); 
@@ -19,6 +20,7 @@ class UserController{
     }
     return result; 
   }
+
   Future<Map> login(String userName,String userPassword) async {
     String url ='http://smart-locker-227608.appspot.com/v1.1/users/login';
     Map data ={

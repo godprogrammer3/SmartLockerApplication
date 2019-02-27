@@ -21,14 +21,14 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  final logo = Container(
+  final logo = Center(child:Container(
     child: Text(
       'SmartLocker',
       style: TextStyle(
           fontSize: 40, color: Colors.orange, fontWeight: FontWeight.bold),
     ),
-    margin: const EdgeInsets.only(top: 105),
-  );
+    padding: const EdgeInsets.only(top: 104.0),
+  ),) ;
 
   void login() async {
     Map result = await _userController.login(
@@ -93,7 +93,7 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: Colors.orange[100],
       body: Center(
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 64),
+          padding: EdgeInsets.fromLTRB(32.0,0.0,32.0,0.0),
           child: Form(
             key: _formKey,
             child: ListView(
