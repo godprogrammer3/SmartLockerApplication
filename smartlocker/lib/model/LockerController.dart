@@ -5,7 +5,7 @@ import 'dart:io';
 class LockerController{
   final httpClient = new Client();
   Future<Map> fillterLocker(String token,int lockerId) async {
-    String url ='http://smart-locker-227608.appspot.com/v1/lockers?id='+lockerId.toString();
+    String url ='http://smart-locker-227608.appspot.com/v1.1/lockers?id='+lockerId.toString();
     var response = await httpClient.get(url,  headers: {HttpHeaders.authorizationHeader: token},);
      //print('Response status: ${response.statusCode}');
      var  result = new Map();
@@ -18,7 +18,7 @@ class LockerController{
     return result; 
   }
   Future<Map> update(String token,int lockerId,String state) async {
-    String url ='http://smart-locker-227608.appspot.com/v1/lockers/'+lockerId.toString();
+    String url ='http://smart-locker-227608.appspot.com/v1.1/lockers/'+lockerId.toString();
     Map data ={
       'state':state
     };

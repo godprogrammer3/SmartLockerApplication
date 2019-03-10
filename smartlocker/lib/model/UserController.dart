@@ -5,7 +5,7 @@ import 'dart:io';
 class UserController{
   final httpClient = new Client();
    Future<Map> filterUser(String token,int userId) async {
-    String url ='http://smart-locker-227608.appspot.com/v1/users/'+userId.toString();
+    String url ='http://smart-locker-227608.appspot.com/v1.1/users/'+userId.toString();
     var response = await httpClient.get(url,  headers: {HttpHeaders.authorizationHeader: token},); 
     print('Response status: ${response.statusCode}');
     var  result = new Map();
@@ -20,7 +20,7 @@ class UserController{
     return result; 
   }
   Future<Map> login(String userName,String userPassword) async {
-    String url ='http://smart-locker-227608.appspot.com/v1/users/login';
+    String url ='http://smart-locker-227608.appspot.com/v1.1/users/login';
     Map data ={
       'username':userName,
       'password':userPassword
@@ -39,7 +39,7 @@ class UserController{
     return result; 
   }
   Future<Map> listRequest(String token) async {
-    String url ='http://smart-locker-227608.appspot.com/v1/me/requests';
+    String url ='http://smart-locker-227608.appspot.com/v1.1/me/requests';
     var response = await httpClient.get(url,headers: {HttpHeaders.authorizationHeader: token}); 
     print('Response status: ${response.statusCode}');
     var  result = new Map();
