@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../page/Page.dart';
 import '../../model/Model.dart';
-void showConfirmationDialog(BuildContext context,String token,int userId,String boxNumber,String slotNumber,String reason) {
+void showConfirmationDialog(BuildContext context,String token,String boxNumber,String slotNumber,String reason) {
     showDialog(
         context: context,
-        builder: (BuildContext context) => UserConfirmationDialog(context,token,userId,boxNumber,slotNumber,reason));
+        builder: (BuildContext context) => UserConfirmationDialog(context,token,boxNumber,slotNumber,reason));
 }
 
 class UserConfirmationDialog extends StatelessWidget{
@@ -12,13 +12,11 @@ class UserConfirmationDialog extends StatelessWidget{
   String boxNumber;
   String slotNumber;
   String reason;
-  int userId;
-  UserConfirmationDialog(BuildContext context, String token, int userId,String boxNumber,String slotNumber,String reason){
+  UserConfirmationDialog(BuildContext context, String token,String boxNumber,String slotNumber,String reason){
     this.token = token;
     this.boxNumber=boxNumber;
     this.slotNumber=slotNumber;
     this.reason= reason;
-    this.userId = userId;
   }
   var _requestController = new RequestController();
   @override
@@ -50,7 +48,6 @@ class UserConfirmationDialog extends StatelessWidget{
                   onPressed: () async {
                     
                     Map result = await _requestController.create(token,int.parse(boxNumber),int.parse(slotNumber),reason);
-                    print(result['message']);
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
                     Navigator.push(
@@ -60,7 +57,6 @@ class UserConfirmationDialog extends StatelessWidget{
                                 boxNumber: this.boxNumber,
                                 slotNumber: this.slotNumber,
                                 token: this.token,
-                                userId: this.userId
                                 )));
                     
                   },

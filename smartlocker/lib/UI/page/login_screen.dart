@@ -13,7 +13,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = TextEditingController();
   var _userController = new UserController();
   final _formKey = GlobalKey<FormState>();
-
+  String token;
   @override
   void dispose() {
     usernameController.dispose();
@@ -21,14 +21,14 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  final logo = Container(
+  final logo = Center(child:Container(
     child: Text(
       'SmartLocker',
       style: TextStyle(
           fontSize: 40, color: Colors.orange, fontWeight: FontWeight.bold),
     ),
-    margin: const EdgeInsets.only(top: 105),
-  );
+    padding: const EdgeInsets.only(top: 104.0),
+  ),) ;
 
   void login() async {
     Map result = await _userController.login(
@@ -36,19 +36,20 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState.validate()) {
       if (result['success'] == true) {
         print('Login success');
-        print(result['role']);
-        if (result['role'] == '0') {
+        token = result['token'];
+        print(result['user']['RoleId']);
+        if (result['user']['RoleId'] == 2) {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => HomeUser(),
+              builder: (context) => HomeUser(result['token']),
             ),
           );
         } else {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => HomeAdmin(),
+              builder: (context) => HomeAdmin(result['token']),
             ),
           );
         }
@@ -92,7 +93,7 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: Colors.orange[100],
       body: Center(
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 64),
+          padding: EdgeInsets.fromLTRB(32.0,0.0,32.0,0.0),
           child: Form(
             key: _formKey,
             child: ListView(
@@ -103,22 +104,26 @@ class _LoginPageState extends State<LoginPage> {
                 signInButton,
                 RaisedButton(
                   child: Text('ไปหน้าผู้ใช้'),
-                  onPressed: (() {
+                  onPressed: (() async {
+                    Map result = await _userController.login('user','user') as Map;
+                    token = result['token'];
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => HomeUser(),
+                        builder: (context) => HomeUser(token),
                       ),
                     );
                   }),
                 ),
                 RaisedButton(
                   child: Text('ไปหน้าแอดมิน'),
-                  onPressed: (() {
+                  onPressed: (() async {
+                    Map result = await _userController.login('admin','admin') as Map;
+                    token = result['token'];
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => HomeAdmin(),
+                        builder: (context) => HomeAdmin(token),
                       ),
                     );
                   }),

@@ -7,15 +7,18 @@ import 'dart:async';
 Timer timerController;
 
 class HomeAdmin extends StatefulWidget {
+  String token;
+  HomeAdmin(this.token);
   @override
   State<StatefulWidget> createState() {
-    return _HomeAdminState();
+    return _HomeAdminState(this.token);
   }
 }
 
 class _HomeAdminState extends State<HomeAdmin> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-
+  String token;
+  _HomeAdminState(this.token);
   @override
   Widget build(BuildContext context) {
     return new WillPopScope(
@@ -39,13 +42,15 @@ class _HomeAdminState extends State<HomeAdmin> {
           backgroundColor: Colors.deepOrange,
         ),
         drawer: SideMenuAdmin(),
-        body: HomeAdminBody(),
+        body: HomeAdminBody(this.token),
       ),
     );
   }
 }
 class HomeAdminBody extends StatefulWidget {
-  _HomeAdminBodyState createState() => _HomeAdminBodyState();
+  String token;
+  HomeAdminBody(this.token);
+  _HomeAdminBodyState createState() => _HomeAdminBodyState(this.token);
 }
 
 class _HomeAdminBodyState extends State<HomeAdminBody> {
@@ -53,6 +58,7 @@ class _HomeAdminBodyState extends State<HomeAdminBody> {
   var _lockerController = new LockerController();
   var _userController = new UserController();
   String token = '';
+  _HomeAdminBodyState(this.token);
   final lockerStatus = List<int>.generate(9, (i) => 0);
   List<Color> lockerColor = List.generate(9, (i) {
     return Colors.green;
@@ -69,43 +75,35 @@ class _HomeAdminBodyState extends State<HomeAdminBody> {
   updateState(Timer t) async {
     if(token==''){
       Map userLoginResult = await _userController.login('admin', 'admin') as Map;
+      //print(userLoginResult);
       if(userLoginResult['success']==true){
         //print(userLoginResult['user']);
         token = userLoginResult['token'];
         //print(token);
+      
       }else{
-        //print(userLoginResult['error']);
+        print(userLoginResult['error']);
       }
     }
     for(int i=1 ; i<=9 ; i++){
-      Map requestFilterResult = await _requestController.filterRequest(token,i) as Map;
-      //print(requestFilterResult['data']);
-      if(requestFilterResult['success']==true)
-      {
-        if(requestFilterResult['data'].toString()=='[]'){
-          Map lockerFilterResult = await _lockerController.fillterLocker(token,i) as Map;
-         
-          if(lockerFilterResult['data'][0]['state']=='close'){
+       Map lockerBoxStateResult = await _lockerController.getBoxState(token,1,i) as Map;
+        if(lockerBoxStateResult['state']=='close'){
+          setState(() {
+              lockerColor[i-1] = Colors.green;     
+              lockerStatus[i-1] = 0;    
+                  });
+        }else if(lockerBoxStateResult['state']=='request'){
             setState(() {
-               lockerColor[i-1] = Colors.green;     
-               lockerStatus[i-1] = 0;    
-                    });
-          }else{
-             setState(() {
-               lockerColor[i-1] = Colors.red;
-               lockerStatus[i-1] = 1;            
-                    });
-          }
+              lockerColor[i-1] = Colors.yellow;
+              lockerStatus[i-1] = 1;            
+                  });
         }else{
-           setState(() {
-               lockerColor[i-1] = Colors.yellow;    
-               lockerStatus[i-1] = 2;        
-                    });
+            setState(() {
+              lockerColor[i-1] = Colors.red;
+              lockerStatus[i-1] = 2;            
+                  });
         }
-      }
-      else{
-        print(requestFilterResult['error']);
-      }
+
     }
     if (firstUpdate == false) {
       firstUpdate = true;
@@ -114,20 +112,16 @@ class _HomeAdminBodyState extends State<HomeAdminBody> {
 
   void onChanged(index) async {
     if (firstUpdate == true) {
-      if (lockerStatus[index] == 2) {
-        Map requestFilterResult = await _requestController.filterRequest(token,index+1) as Map;
-        //print(lockerFilterResult['data'][0]['requestUserId']);
-        Map userFilterResult = await _userController.filterUser(token,  requestFilterResult['data'][0]['requestUserId']) as Map;
-        //print(userFilterResult['data']['username']); 
-        //print( userFilterResult['error']);
-        
+      if (lockerStatus[index] == 1) {
+        Map lockerRecentRequestResult = await _lockerController.getRecentRequest(token,1,1) as Map;
         showAdminConfirm(
             context,
             token,
-            userFilterResult['data']['username'],
-            requestFilterResult['data'][0]['createdAt'],
-            requestFilterResult['data'][0]['reason'],
-            requestFilterResult['data'][0]['id'],
+            lockerRecentRequestResult['requestUser']['username'],
+            lockerRecentRequestResult['createdAt'],
+            lockerRecentRequestResult['reason'],
+            lockerRecentRequestResult['id'],
+            1,
             index+1
             );
         
