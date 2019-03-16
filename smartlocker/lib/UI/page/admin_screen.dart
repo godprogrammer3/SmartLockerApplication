@@ -3,6 +3,7 @@ import '../../model/Model.dart';
 import '../widget/Widget.dart';
 import '../page/Page.dart';
 import 'dart:async';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 Timer timerController;
 
@@ -18,7 +19,32 @@ class HomeAdmin extends StatefulWidget {
 class _HomeAdminState extends State<HomeAdmin> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   String token;
+  FirebaseMessaging _firebaseMessaging= new FirebaseMessaging();
+  var _userController = new UserController();
   _HomeAdminState(this.token);
+  @override
+  void initState(){
+    _firebaseMessaging.configure(
+      onMessage: (Map<String,dynamic> message){
+        print('on message $message');
+      },
+      onLaunch: (Map<String,dynamic> message){
+        print('on launch $message');
+      },
+      onResume: (Map<String,dynamic> message){
+        print('on resume $message');
+      }
+    );
+     _firebaseMessaging.getToken().then((token) async {
+      print('token:'+token);
+      Map result = await _userController.updateFcmToken(this.token, token);
+      if(result['success'] == true){
+        print(result);
+      }else{
+        print(result['error']);
+      }
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return new WillPopScope(
@@ -41,7 +67,7 @@ class _HomeAdminState extends State<HomeAdmin> {
           ),
           backgroundColor: Colors.deepOrange,
         ),
-        drawer: SideMenuAdmin(),
+        drawer: SideMenuAdmin(this._firebaseMessaging,this.token),
         body: HomeAdminBody(this.token),
       ),
     );
@@ -57,6 +83,7 @@ class _HomeAdminBodyState extends State<HomeAdminBody> {
   var _requestController = new RequestController();
   var _lockerController = new LockerController();
   var _userController = new UserController();
+  
   String token = '';
   _HomeAdminBodyState(this.token);
   final lockerStatus = List<int>.generate(9, (i) => 0);
@@ -69,7 +96,7 @@ class _HomeAdminBodyState extends State<HomeAdminBody> {
   void initState(){
     const millis = const Duration(milliseconds: 500);
     timerController = new Timer.periodic(millis, (Timer t) => updateState(t));
-
+    
   }
 
   updateState(Timer t) async {
@@ -85,26 +112,35 @@ class _HomeAdminBodyState extends State<HomeAdminBody> {
         print(userLoginResult['error']);
       }
     }
-    for(int i=1 ; i<=9 ; i++){
-       Map lockerBoxStateResult = await _lockerController.getBoxState(token,1,i) as Map;
-        if(lockerBoxStateResult['state']=='close'){
+
+     for(int i=1 ; i<=9 ; i++){
+      Map lockerBoxStateResult = await _lockerController.getBoxState(token,1,i) as Map;
+      if(lockerBoxStateResult['state']=='close'){
+        if(this.mounted){
           setState(() {
-              lockerColor[i-1] = Colors.green;     
-              lockerStatus[i-1] = 0;    
-                  });
-        }else if(lockerBoxStateResult['state']=='request'){
-            setState(() {
-              lockerColor[i-1] = Colors.yellow;
-              lockerStatus[i-1] = 1;            
-                  });
-        }else{
-            setState(() {
-              lockerColor[i-1] = Colors.red;
-              lockerStatus[i-1] = 2;            
-                  });
+            lockerColor[i-1] = Colors.green;     
+            lockerStatus[i-1] = 0;    
+                });
         }
+        
+      }else if(lockerBoxStateResult['state']=='request'){
+        if(this.mounted){
+          setState(() {
+            lockerColor[i-1] = Colors.yellow;
+            lockerStatus[i-1] = 1;            
+                });
+        }
+      }else{
+        if(this.mounted){
+           setState(() {
+            lockerColor[i-1] = Colors.red;
+            lockerStatus[i-1] = 2;            
+                });
+        }
+      }
 
     }
+    
     if (firstUpdate == false) {
       firstUpdate = true;
     }
@@ -130,7 +166,7 @@ class _HomeAdminBodyState extends State<HomeAdminBody> {
   }
 
   @override
-  void dispose(){
+  void dispose() {
     super.dispose();
   }
 
@@ -143,15 +179,46 @@ class _HomeAdminBodyState extends State<HomeAdminBody> {
         children: List.generate(9, (index) {
           return GestureDetector(
               onTap: () {
-                  onChanged(index);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Locker(token,index+1),
+                    )
+                  );
               },
               child: Column(
                 children: <Widget>[
-                  Icon(
-                    Icons.branding_watermark,
-                    size: 90.0,
-                    color: lockerColor[index],
+                  Stack(
+                    children: <Widget>[
+                      new Icon(
+                        Icons.chrome_reader_mode,
+                        size: 80,
+                      ),
+                      new Positioned(
+                        right: 0,
+                        child: new Container(
+                          padding: EdgeInsets.all(1),
+                          decoration: new BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          constraints: BoxConstraints(
+                            minWidth: 12,
+                            minHeight: 12,
+                          ),
+                          child: new Text(
+                            '10',
+                            style: new TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      )
+                    ],
                   ),
+              
                   Text(
                     (index+1).toString(),
                     style: TextStyle(
@@ -165,3 +232,4 @@ class _HomeAdminBodyState extends State<HomeAdminBody> {
     );
   }
 }
+

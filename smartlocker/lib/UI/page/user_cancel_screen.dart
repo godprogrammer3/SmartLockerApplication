@@ -1,47 +1,30 @@
 import 'package:flutter/material.dart';
+import '../../model/Model.dart';
 import '../widget/Widget.dart';
+import '../page/Page.dart';
 import 'dart:async';
-class UserCancel extends StatefulWidget{
-  UserCancel({this.token,this.requestId});
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+class UserCancle extends StatefulWidget {
   String token;
   int requestId;
+  FirebaseMessaging _firebaseMessaging= new FirebaseMessaging();
+  UserCancle(this.token,this.requestId,this._firebaseMessaging);
   @override
   State<StatefulWidget> createState() {
-    return UserCancelState(token: token , requestId: requestId);
+    return _UserCancelState(token,requestId,_firebaseMessaging);
   }
 }
-class UserCancelState extends State<UserCancel>{
-  UserCancelState({this.token ,this.requestId});
+
+class _UserCancelState extends State<UserCancle> {
   String token;
   int requestId;
-  int count = 0;
-  //final Stream newsStream = new Stream.periodic(Duration(seconds: 2);
-
-  update(){
-    count++;
-  }
-  @override
-  void initState(){
-    super.initState();
-    /*
-    newsStream.listen(update());
-    newsStream.map((e) {
-    count = e;
-    print(count);
-    return 'stuff $e';
-  }).take(5).forEach((e) {
-    print(e);
-  });
-  */
-  }
+   FirebaseMessaging _firebaseMessaging= new FirebaseMessaging();
+  _UserCancelState(this.token,this.requestId,this._firebaseMessaging);
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
-    final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-    return WillPopScope(
-      onWillPop: (){
-
-      },
-      child: Scaffold(
+    return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
         leading: IconButton(
@@ -54,24 +37,32 @@ class UserCancelState extends State<UserCancel>{
         ),
         backgroundColor: Colors.deepOrange,
       ),
-      drawer: SideMenuUser(),
-      body: UserCancelBody(),
-    )
+      drawer: SideMenuUser(this._firebaseMessaging,1,token),
+      body:UserCancleBody(token),
     );
+  }
+}
+
+class UserCancleBody extends StatefulWidget{
+  String token;
+  UserCancleBody(this.token);
+  @override
+  State<StatefulWidget> createState() {
+    return UserCancleBodyState();
   }
 
 }
 
-class UserCancelBody extends StatelessWidget{
+class UserCancleBodyState extends State<UserCancleBody>{
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        Row(
+        Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text('Cancel screen')
+            Text('คืนตู้')
           ],
         )
       ],
@@ -79,3 +70,5 @@ class UserCancelBody extends StatelessWidget{
   }
 
 }
+
+

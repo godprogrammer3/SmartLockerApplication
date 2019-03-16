@@ -3,16 +3,17 @@ import 'Page.dart';
 import 'dart:async';
 import '../../model/Model.dart';
 import 'package:flutter_svg/svg.dart';
-Timer userResultTimerController;
+import 'package:firebase_messaging/firebase_messaging.dart';
 class ResultUser extends StatefulWidget {
-  ResultUser({Key key, this.token,this.userId, this.boxNumber,this.slotNumber}) : super(key: key);
+  ResultUser({Key key, this.token,this.requestId, this.boxNumber,this.slotNumber}) : super(key: key);
   final String boxNumber;
   final String slotNumber;
   final String token;
-  final int userId;
+  final int requestId;
+ 
   @override
   State<StatefulWidget> createState() {
-    return _ResultUserState(boxNumber: boxNumber,slotNumber: slotNumber,token:token,userId:userId);
+    return _ResultUserState(boxNumber: boxNumber,slotNumber: slotNumber,token:token,requestId:requestId);
   }
 }
 enum state{
@@ -21,7 +22,6 @@ enum state{
 }
 class _ResultUserState extends State<ResultUser> {
   int _result;
-  int userId;
   int requestId;
   state _currentState;
   IconData _showIcon;
@@ -29,10 +29,11 @@ class _ResultUserState extends State<ResultUser> {
   String _displayText1 ;
   String _displayText2;
   String _displayText3;
-  _ResultUserState({Key key, this.boxNumber,this.slotNumber,this.token,this.userId});
+  _ResultUserState({Key key, this.boxNumber,this.slotNumber,this.token,this.requestId});
   String boxNumber;
   String slotNumber;
   String token;
+   FirebaseMessaging _firebaseMessaging= new FirebaseMessaging();
   var _requestController = new RequestController();
   var _userController = new UserController();
   @override
@@ -44,12 +45,39 @@ class _ResultUserState extends State<ResultUser> {
     _displayText1 = 'ยังไม่ถูกอนุมัติ';
     _displayText2 = 'กรุณารอการอนุมัติจากแอดมิน';
     _displayText3 = 'ยกเลิกขอเปิดตู้';
-    _currentState = state.running;
-    const millis = const Duration(milliseconds: 500);
-    userResultTimerController = new Timer.periodic(millis,(Timer t)=>updateState(t));  
+     _firebaseMessaging.configure(
+      onMessage: (Map<String,dynamic> message) async {
+        print('on message main $message');
+        /*
+        if(message['data']['type']=='reply'){
+          if(message['data']['requestState']=='reject'){
+            _result = 1;
+            onChanged();
+          }else if(message['data']['requestState']=='approve'){
+            _result = 2;
+            onChanged();
+          }else if(message['data']['requestState']=='timeout'){
+            _result = 3;
+            onChanged();
+          }
+        }
+        */
+      },
+      onLaunch: (Map<String,dynamic> message) async {
+        print('on launch main $message');
+      },
+      onResume: (Map<String,dynamic> message) async {
+        print('on resume main $message');
+      }
+    );
+  }
+  @override
+  void dispose(){
+    super.dispose();
   }
   void onChanged() {
-    setState(() {
+    if(this.mounted){
+      setState(() {
       if (_result == 0) {
         _showIcon = Icons.query_builder;
         _iconColor = Colors.yellow;
@@ -68,37 +96,23 @@ class _ResultUserState extends State<ResultUser> {
         _displayText1 = 'ถูกอนุมัติแล้ว';
         _displayText2 = '';
         _displayText3 = 'กลับสู่หน้าแรก';
+      }else if( _result == 3){
+        _showIcon = Icons.timer_off;
+        _iconColor = Colors.red;
+        _displayText1 = 'คำร้องขอหมดอายุ';
+        _displayText2 = '';
+        _displayText3 = 'กลับสู่หน้าแรก';
       }
-    });
+    });  
+    }
   }
 
-  updateState(Timer t) async {
-    if(_currentState == state.running)
-    {
-      Map result = await _userController.getRecentRequest(token);
-      requestId = result['id'];
-      if(result['state']=='wait'){
-        _result = 0;
-        onChanged();
-      }else if(result['state']=='reject'){
-        _result = 1;
-        onChanged();
-      }else if(result['state']=='approve'){
-        _result = 2;
-        onChanged();
-      }
-    }
-    else
-    {
-      userResultTimerController.cancel();
-    }
-  }
+  
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-    onWillPop: () async {
-      await userResultTimerController.cancel();
+    onWillPop: (){
       Navigator.of(context).pop();
     },
     child: Scaffold(
@@ -106,7 +120,6 @@ class _ResultUserState extends State<ResultUser> {
         leading: new IconButton(
           icon: new Icon(Icons.arrow_back),
           onPressed: (){
-            userResultTimerController.cancel();
             Navigator.pop(context);}
         ),
       ),
@@ -175,11 +188,10 @@ class _ResultUserState extends State<ResultUser> {
             children: <Widget>[
               RaisedButton(
                 child: Text(_displayText3,style: TextStyle(fontFamily: 'Kanit'),),
-                onPressed: () async {
+                onPressed: (){
                   if (_result == 0) {
                     _showAlertDialog(context);
                   }else{
-                    await userResultTimerController.cancel();
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
                     Navigator.push(context,
@@ -223,11 +235,10 @@ class _ResultUserState extends State<ResultUser> {
                         fontFamily: 'Kanit', color: Colors.blueAccent),
                   ),
                   onPressed: () async { 
-                    await userResultTimerController.cancel();
                     await _requestController.update(token,requestId, 'cancel');
-                    await Navigator.of(context).pop();
-                    await Navigator.of(context).pop();
-                    await Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
                     Navigator.push(context,
                     MaterialPageRoute(builder: (context) => HomeUser(token)));
                     

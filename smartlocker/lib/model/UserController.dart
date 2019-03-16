@@ -6,7 +6,7 @@ class UserController{
   final httpClient = new Client();
 
    Future<Map> filterUser(String token,int userId) async {
-    String url ='http://smart-locker-227608.appspot.com/v1.1/users/'+userId.toString();
+    String url ='http://10.66.14.157:2000/v1.1/users/'+userId.toString();
     var response = await httpClient.get(url,  headers: {HttpHeaders.authorizationHeader: token},); 
     print('Response status: ${response.statusCode}');
     var  result = new Map();
@@ -22,13 +22,13 @@ class UserController{
   }
 
   Future<Map> login(String userName,String userPassword) async {
-    String url ='http://smart-locker-227608.appspot.com/v1.1/users/login';
+    String url ='http://10.66.14.157:2000/v1.1/users/login';
     Map data ={
-      'username':userName,
-      'password':userPassword
+      'username':'demo',
+      'password':'demo'
     };
     var response = await httpClient.post(url,body:jsonEncode(data),headers: {"Content-Type": "application/json"}); 
-    print('Response status: ${response.statusCode}');
+    print('Response login status: ${response.statusCode}');
     var  result = new Map();
     if(response.statusCode==200){
       result = jsonDecode(response.body);
@@ -40,9 +40,9 @@ class UserController{
     return result; 
   }
   Future<Map> getRecentRequest(String token) async {
-    String url ='http://smart-locker-227608.appspot.com/v1.1/me/requests?limit=1&order=id:DESC';
+    String url ='http://10.66.14.157:2000/v1.1/me/requests?limit=1&order=id:DESC';
     var response = await httpClient.get(url,headers: {HttpHeaders.authorizationHeader: token}); 
-    print('Response status: ${response.statusCode}');
+    print('Response recent status: ${response.statusCode}');
     var  result = new Map();
     var tmpResult;
     if(response.statusCode==200){
@@ -59,5 +59,21 @@ class UserController{
     }
     return result; 
   }
-  
+  Future<Map> updateFcmToken(String token,String fcmToken) async {
+    String url ='http://10.66.14.157:2000/v1.1/me';
+    Map data ={
+      'FCM_token':fcmToken
+    };
+    var response = await httpClient.put(url,body:jsonEncode(data),headers: {"Content-Type": "application/json",HttpHeaders.authorizationHeader: token}); 
+    //print('Response status: ${response.statusCode}');
+    var  result = new Map();
+    if(response.statusCode==200){
+      result = jsonDecode(response.body);
+      result['success'] = true;
+    }else{
+      result['success']=false;
+      result['error']=response.body;
+    }
+    return result; 
+  }
 }

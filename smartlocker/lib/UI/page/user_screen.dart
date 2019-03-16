@@ -24,10 +24,8 @@ class _HomeUserState extends State<HomeUser> {
   int requestId;
   int userId;
   @override
-  void initState() {
-    prepare();
-    super.initState();
-    _homeBody = HomeUserBody(token);
+  void initState(){
+    
     _firebaseMessaging.configure(
       onMessage: (Map<String,dynamic> message){
         print('on message $message');
@@ -39,7 +37,23 @@ class _HomeUserState extends State<HomeUser> {
         print('on resume $message');
       }
     );
-    _firebaseMessaging.getToken().then((token){print('token:'+token);});
+    
+    _firebaseMessaging.getToken().then((token) async {
+      print('token:'+token);
+      Map result = await _userController.updateFcmToken(this.token, token);
+      if(result['success'] == true){
+        print('put fcm token success');
+      }else{
+        print(result['error']);
+      }
+    });
+    prepare();
+    super.initState();
+    _homeBody = HomeUserBody(token);
+    
+     
+    
+    
 
   }
 
@@ -51,7 +65,7 @@ class _HomeUserState extends State<HomeUser> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => UserCancel(token: this.token,requestId: this.requestId),
+          builder: (context) => UserCancle(this.token,this.requestId,this._firebaseMessaging),
         )
       );
     }
@@ -72,7 +86,7 @@ class _HomeUserState extends State<HomeUser> {
         ),
         backgroundColor: Colors.deepOrange,
       ),
-      drawer: SideMenuUser(),
+      drawer: SideMenuUser(this._firebaseMessaging,2,this.token),
       body:_homeBody,
     );
   }

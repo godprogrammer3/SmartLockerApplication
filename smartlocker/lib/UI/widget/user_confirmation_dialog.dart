@@ -48,6 +48,7 @@ class UserConfirmationDialog extends StatelessWidget{
                   onPressed: () async {
                     
                     Map result = await _requestController.create(token,int.parse(boxNumber),int.parse(slotNumber),reason);
+                    print(result);
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
                     Navigator.push(
@@ -57,6 +58,7 @@ class UserConfirmationDialog extends StatelessWidget{
                                 boxNumber: this.boxNumber,
                                 slotNumber: this.slotNumber,
                                 token: this.token,
+                                requestId: result['id'],
                                 )));
                     
                   },

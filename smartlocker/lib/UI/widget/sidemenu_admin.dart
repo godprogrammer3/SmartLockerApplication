@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import '../page/Page.dart';
-// import '../../model/Model.dart';
-
+import 'package:firebase_messaging/firebase_messaging.dart';
+import '../../model/Model.dart';
 class SideMenuAdmin extends StatelessWidget {
+  FirebaseMessaging _firebaseMessaging;
+  String token;
+  SideMenuAdmin(this._firebaseMessaging,this.token);
+  var _userController = new UserController();
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -62,6 +66,8 @@ class SideMenuAdmin extends StatelessWidget {
           ),
           ListTile(
             onTap: () async {
+              _firebaseMessaging.deleteInstanceID();
+              _userController.updateFcmToken(token,'');
               await timerController.cancel();
               Navigator.of(context).pop();
               Navigator.of(context).pop();
