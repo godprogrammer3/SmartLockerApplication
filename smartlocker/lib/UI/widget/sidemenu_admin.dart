@@ -50,7 +50,7 @@ class SideMenuAdmin extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => History(),
+                  builder: (context) => History(this.token),
                 ),
               );
              
