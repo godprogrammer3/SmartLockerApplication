@@ -38,6 +38,7 @@ class MyAppState extends State<MyApp>{
       ),
       //combine those screens
       home: LoginPage(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
