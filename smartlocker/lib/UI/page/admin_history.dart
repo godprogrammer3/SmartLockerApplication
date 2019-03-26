@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../page/Page.dart';
 import '../widget/Widget.dart';
+import '../../model/Model.dart';
 
 class HistoryList {
   String name;
@@ -8,21 +10,27 @@ class HistoryList {
   String locker;
   String lockerBox;
   String time;
-  String description;
+  String reason;
 
-  HistoryList(this.locker, this.lockerBox, this.name, this.day, this.time,
-      this.description);
+  HistoryList(
+      this.name, this.day, this.locker, this.lockerBox, this.time, this.reason);
 }
 
 class History extends StatefulWidget {
+  String token;
+  History(this.token);
   @override
   State<StatefulWidget> createState() {
-    return _HistoryState();
+    return _HistoryState(token);
   }
 }
 
 class _HistoryState extends State<History> {
+  String token;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+  _HistoryState(this.token);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,32 +42,41 @@ class _HistoryState extends State<History> {
               Navigator.pop(context);
             }),
       ),
-      body: HistoryBody(),
+      body: HistoryBody(token),
     );
   }
 }
 //----------------------------------------------------------------------------------------
 
 class HistoryBody extends StatefulWidget {
+  String token;
+
+  HistoryBody(this.token);
+
   @override
   HistoryBodyState createState() {
-    return new HistoryBodyState();
+    return new HistoryBodyState(token);
   }
 }
 
 //----------------------------------------------------------------------------------------------
 class HistoryBodyState extends State<HistoryBody> {
+  String token;
+  var _historyController = new HistoryController();
+
   List _itemFilter = ["วัน เวลา", "หมายเลขล็อกเกอร์", "หมายเลขตู้"];
 
   List<DropdownMenuItem<String>> _dropDownMenuItems;
   String _currentItem;
+
+  HistoryBodyState(this.token);
 
   void backToAdminHome() {
     Navigator.of(context).pop();
     Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => HomeAdmin("token"),
+          builder: (context) => HomeAdmin(token),
         ));
   }
 
@@ -84,15 +101,9 @@ class HistoryBodyState extends State<HistoryBody> {
   @override
   Widget build(BuildContext context) {
     final _backIcon = new BackIcon(backToAdminHome: backToAdminHome);
-    List<HistoryList> items = [
-      HistoryList('0', '1', 'AAA', '1/2/1', '01.22',
-          'หิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิวหิว'),
-      HistoryList('0', '1', 'BBB', '1/2/1', '01.22', 'ข้าวมันไก่ทอด'),
-      HistoryList('1', '2', 'CCC', '1/2/1', '01.22', 'มาม่า'),
-      HistoryList('0', '2', 'DDD', '1/2/1', '01.22', 'ยำมาม่า'),
-      HistoryList('4', '1', 'FFF', '1/2/1', '01.22', 'โอริโอ้ปั่น'),
-      HistoryList('1', '1', 'EEE', '1/2/1', '01.22', 'ข้าวกระเพราไข่เจียว'),
-    ];
+
+    var listRequestHistory = _historyController.getAllRequestLocker(token);
+    List<HistoryList> items = [];
 
     return Scaffold(
         body: ListView(
@@ -114,131 +125,115 @@ class HistoryBodyState extends State<HistoryBody> {
           height: 1,
         ),
         Padding(
-          child: ListView.builder(
-            itemBuilder: (BuildContext context, int index) {
-              return ExpansionTile(
-                title: Container(
-                  child: Column(
-                    children: <Widget>[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            "ตู้ที่ " +
-                                items[index].locker +
-                                " ล็อกเกอร์ " +
-                                items[index].locker,
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Opacity(
-                            opacity: 0.6,
-                            child: Text(
-                                "วัน " +
-                                    items[index].day +
-                                    " เวลา " +
-                                    items[index].time,
-                                style: TextStyle(
-                                    fontSize: 12, fontWeight: FontWeight.w600)),
-                          ),
-                          Text(items[index].name),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                children: <Widget>[
-                  Padding(
-                    child: Container(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            "เหตุผลขอเปิดตู้ : ",
-                            style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.bold),
-                          ),
-                          Text(items[index].description)
-                        ],
-                      ),
-                    ),
-                    padding: EdgeInsets.fromLTRB(20, 5, 20, 10),
-                  )
-                ],
-              );
+          child: FutureBuilder(
+            future: listRequestHistory,
+            builder: (context, asyncSnapshot) {
+              switch (asyncSnapshot.connectionState) {
+                case ConnectionState.none:
+                case ConnectionState.waiting:
+                  return new Text('loading...');
+                default:
+                  if (asyncSnapshot.hasError)
+                    return new Text('Error: ${asyncSnapshot.error}');
+                  else {
+                    if (asyncSnapshot.data.toString() == '[]') {
+                      return Text('No Data');
+                    } else {
+                      asyncSnapshot.data.forEach((element) {
+
+                        var dateTime = DateTime.parse(element['createdAt']);
+                        var day = dateTime.day.toString();
+                        var month = dateTime.month.toString();
+                        var year =dateTime.year;
+                        year = year +  543;
+
+                        var time = DateFormat.Hm().format(dateTime).toString();
+                      
+                        items.add(HistoryList(
+                            element['requestUser']['username'].toString(),
+                            day+'/'+month+'/'+year.toString(),
+                            element['Box']['id'].toString(),
+                            element['Box']['number'].toString(),
+                            time+'น.',
+                            element['reason'].toString()));
+                      });
+                      // แสดงผล ExpansionTile
+                      return ListView.builder(
+                        physics: NeverScrollableScrollPhysics(),
+                        itemBuilder: (BuildContext context, int index) {
+                          return ExpansionTile(
+                            title: Container(
+                              child: Column(
+                                children: <Widget>[
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text(
+                                        "ตู้ที่ " +
+                                            items[index].locker +
+                                            " ล็อกเกอร์ " +
+                                            items[index].locker,
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Opacity(
+                                        opacity: 0.6,
+                                        child: Text(
+                                            "วัน " +
+                                                items[index].day +
+                                                " เวลา " +
+                                                items[index].time,
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600)),
+                                      ),
+                                      Text(items[index].name),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            children: <Widget>[
+                              Padding(
+                                child: Container(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text(
+                                        "เหตุผลขอเปิดตู้ : ",
+                                        style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Text(items[index].reason)
+                                    ],
+                                  ),
+                                ),
+                                padding: EdgeInsets.fromLTRB(20, 5, 20, 10),
+                              )
+                            ],
+                          );
+                        },
+                        itemCount: items.length,
+                        shrinkWrap: true,
+                      );
+                    }
+                  }
+              }
             },
-            itemCount: items.length,
-            shrinkWrap: true,
           ),
           padding: EdgeInsets.only(top: 20),
         ),
       ],
-    )
-
-        // Center(
-        //   child: Container(
-        //     padding: EdgeInsets.fromLTRB(23.00, 24.00, 23.00, 24.00),
-        //     child: Column(
-        //       children: <Widget>[
-        //         //--------------------------------
-        //         //_backIcon,
-        //         //--------------------------------
-        //         Padding(
-        //           child: Row(
-        //             children: <Widget>[
-        //               Text("เรียงตาม : "),
-        //               DropdownButtonHideUnderline(
-        //                 child: Container(
-        //                   child: new DropdownButton(
-        //                     isDense: true,
-        //                     value: _currentItem,
-        //                     items: _dropDownMenuItems,
-        //                     onChanged: changedDropDownItem,
-        //                   ),
-        //                   padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
-        //                   decoration: ShapeDecoration(
-        //                     shape: RoundedRectangleBorder(
-        //                       side: BorderSide(
-        //                           width: 1.0, style: BorderStyle.solid),
-        //                       borderRadius:
-        //                           BorderRadius.all(Radius.circular(2.0)),
-        //                     ),
-        //                   ),
-        //                 ),
-        //               )
-        //             ],
-        //             mainAxisAlignment: MainAxisAlignment.center,
-        //           ),
-        //           padding: EdgeInsets.only(bottom: 15),
-        //         ),
-        //         //--------------------------------
-        //         ListView.builder(
-        //           itemBuilder: (BuildContext context, int index) {
-        //             // if (index == items.length)
-        //             //   return RaisedButton(
-        //             //     child: Text('footer'),
-        //             //     onPressed: () {},
-        //             //   );
-        //             return ExpansionTile(
-        //               title: Text(items[index].name),
-        //               children: <Widget>[
-        //                 Text(items[index].age),
-        //                 Text(items[index].gender)
-        //               ],
-        //             );
-        //           },
-        //           itemCount: items.length,
-        //         ),
-        //       ],
-        //     ),
-        //   ),
-        // ),
-        );
+    ));
   }
 
   void changedDropDownItem(String selected) {

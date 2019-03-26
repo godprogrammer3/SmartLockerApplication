@@ -24,8 +24,8 @@ class UserController{
   Future<Map> login(String userName,String userPassword) async {
     String url ='http://smart-locker-227608.appspot.com/v1.1/users/login';
     Map data ={
-      'username':'demo',
-      'password':'demo'
+      'username':userName,
+      'password':userPassword
     };
     var response = await httpClient.post(url,body:jsonEncode(data),headers: {"Content-Type": "application/json"}); 
     print('Response login status: ${response.statusCode}');

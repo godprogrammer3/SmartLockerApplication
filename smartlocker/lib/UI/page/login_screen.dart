@@ -33,6 +33,7 @@ class _LoginPageState extends State<LoginPage> {
   void login() async {
     Map result = await _userController.login(
         usernameController.text, passwordController.text) as Map;
+    print(result);
     if (_formKey.currentState.validate()) {
       if (result['success'] == true) {
         print('Login success');
@@ -45,7 +46,7 @@ class _LoginPageState extends State<LoginPage> {
               builder: (context) => HomeUser(result['token']),
             ),
           );
-        } else {
+        } else if(result['user']['RoleId'] == 1) {
           Navigator.push(
             context,
             MaterialPageRoute(
