@@ -6,7 +6,7 @@ class UserController{
   final httpClient = new Client();
 
    Future<Map> filterUser(String token,int userId) async {
-    String url ='http://10.66.14.157:2000/v1.1/users/'+userId.toString();
+    String url ='http://smart-locker-227608.appspot.com/v1.1/users/'+userId.toString();
     var response = await httpClient.get(url,  headers: {HttpHeaders.authorizationHeader: token},); 
     print('Response status: ${response.statusCode}');
     var  result = new Map();
@@ -22,7 +22,7 @@ class UserController{
   }
 
   Future<Map> login(String userName,String userPassword) async {
-    String url ='http://10.66.14.157:2000/v1.1/users/login';
+    String url ='http://smart-locker-227608.appspot.com/v1.1/users/login';
     Map data ={
       'username':'demo',
       'password':'demo'
@@ -40,7 +40,7 @@ class UserController{
     return result; 
   }
   Future<Map> getRecentRequest(String token) async {
-    String url ='http://10.66.14.157:2000/v1.1/me/requests?limit=1&order=id:DESC';
+    String url ='http://smart-locker-227608.appspot.com/v1.1/me/requests?limit=1&order=id:DESC';
     var response = await httpClient.get(url,headers: {HttpHeaders.authorizationHeader: token}); 
     print('Response recent status: ${response.statusCode}');
     var  result = new Map();
@@ -60,7 +60,7 @@ class UserController{
     return result; 
   }
   Future<Map> updateFcmToken(String token,String fcmToken) async {
-    String url ='http://10.66.14.157:2000/v1.1/me';
+    String url ='http://smart-locker-227608.appspot.com/v1.1/me';
     Map data ={
       'FCM_token':fcmToken
     };

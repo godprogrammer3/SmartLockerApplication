@@ -33,43 +33,17 @@ class _ResultUserState extends State<ResultUser> {
   String boxNumber;
   String slotNumber;
   String token;
-   FirebaseMessaging _firebaseMessaging= new FirebaseMessaging();
   var _requestController = new RequestController();
   var _userController = new UserController();
   @override
   void initState() {
-
+    super.initState();
     _result = 0;
     _showIcon = Icons.query_builder;
     _iconColor = Colors.yellow;
     _displayText1 = 'ยังไม่ถูกอนุมัติ';
     _displayText2 = 'กรุณารอการอนุมัติจากแอดมิน';
     _displayText3 = 'ยกเลิกขอเปิดตู้';
-     _firebaseMessaging.configure(
-      onMessage: (Map<String,dynamic> message) async {
-        print('on message main $message');
-        /*
-        if(message['data']['type']=='reply'){
-          if(message['data']['requestState']=='reject'){
-            _result = 1;
-            onChanged();
-          }else if(message['data']['requestState']=='approve'){
-            _result = 2;
-            onChanged();
-          }else if(message['data']['requestState']=='timeout'){
-            _result = 3;
-            onChanged();
-          }
-        }
-        */
-      },
-      onLaunch: (Map<String,dynamic> message) async {
-        print('on launch main $message');
-      },
-      onResume: (Map<String,dynamic> message) async {
-        print('on resume main $message');
-      }
-    );
   }
   @override
   void dispose(){

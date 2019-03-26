@@ -5,7 +5,7 @@ import 'dart:io';
 class RequestController{
   final httpClient = new Client();
   Future<Map> filterRequest(String token,int lockerId) async {
-    String url ='http://10.66.14.157:2000/v1/requests?state=wait&lockerId='+lockerId.toString();
+    String url ='http://smart-locker-227608.appspot.com/v1.1/requests?state=wait&lockerId='+lockerId.toString();
     var response = await httpClient.get(url,  headers: {HttpHeaders.authorizationHeader: token},); 
     //print('Response status: ${response.statusCode}');
     var  result = new Map();
@@ -20,7 +20,7 @@ class RequestController{
     return result; 
   }
   Future<Map> filterRequestQuery(String token,String query) async {
-    String url ='http://10.66.14.157:2000/v1/requests?'+query;
+    String url ='http://smart-locker-227608.appspot.com/v1.1/requests?'+query;
     var response = await httpClient.get(url,  headers: {HttpHeaders.authorizationHeader: token},); 
     //print('Response status: ${response.statusCode}');
     var  result = new Map();
@@ -36,7 +36,7 @@ class RequestController{
     return result; 
   }
   Future<Map> update(String token,int requestId,String state) async {
-    String url ='http://10.66.14.157:2000/v1.1/requests/'+requestId.toString();
+    String url ='http://smart-locker-227608.appspot.com/v1.1/requests/'+requestId.toString();
     Map data ={
       'state':state
     };
@@ -53,7 +53,7 @@ class RequestController{
     return result; 
   }
   Future<Map> create(String token,int lockerNumber,int boxNumber,String reason) async {
-    String url ='http://10.66.14.157:2000/v1.1/requests';
+    String url ='http://smart-locker-227608.appspot.com/v1.1/requests';
     Map data ={
       'lockerNumber':lockerNumber,
       'boxNumber':boxNumber,

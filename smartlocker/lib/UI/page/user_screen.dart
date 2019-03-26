@@ -17,23 +17,22 @@ class _HomeUserState extends State<HomeUser> {
   String token;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   HomeUserBody _homeBody;
-  FirebaseMessaging _firebaseMessaging= new FirebaseMessaging();
   var _userController = new UserController();
   var _requestController = new RequestController();
-  
+  FirebaseMessaging _firebaseMessaging = new FirebaseMessaging();
   int requestId;
   int userId;
   @override
   void initState(){
     
     _firebaseMessaging.configure(
-      onMessage: (Map<String,dynamic> message){
+      onMessage: (Map<String,dynamic> message) async {
         print('on message $message');
       },
-      onLaunch: (Map<String,dynamic> message){
+      onLaunch: (Map<String,dynamic> message) async {
         print('on launch $message');
       },
-      onResume: (Map<String,dynamic> message){
+      onResume: (Map<String,dynamic> message) async {
         print('on resume $message');
       }
     );
