@@ -4,14 +4,14 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 void main(){
   FirebaseMessaging _firebaseMessaging= new FirebaseMessaging();
   _firebaseMessaging.configure(
-      onMessage: (Map<String,dynamic> message) async {
+      onMessage: (Map<dynamic,dynamic> message)  async {
         print('on message main $message');
       },
-      onLaunch: (Map<String,dynamic> message) async {
-        print('on launch main $message');
-      },
-      onResume: (Map<String,dynamic> message) async {
+      onResume: (Map<dynamic,dynamic> message) async  {
         print('on resume main $message');
+      },
+      onLaunch: (Map<dynamic,dynamic> message)  async {
+        print('on launch main $message');
       }
   );
   runApp(MyApp());
