@@ -21,7 +21,7 @@ enum state{
     stop,
 }
 class _ResultUserState extends State<ResultUser> {
-  int _result;
+  int _result = 0;
   int requestId;
   state _currentState;
   IconData _showIcon;
@@ -33,6 +33,7 @@ class _ResultUserState extends State<ResultUser> {
   String boxNumber;
   String slotNumber;
   String token;
+  FirebaseMessaging _firebaseMessaging= new FirebaseMessaging();
   var _requestController = new RequestController();
   var _userController = new UserController();
   @override
@@ -44,6 +45,34 @@ class _ResultUserState extends State<ResultUser> {
     _displayText1 = 'ยังไม่ถูกอนุมัติ';
     _displayText2 = 'กรุณารอการอนุมัติจากแอดมิน';
     _displayText3 = 'ยกเลิกขอเปิดตู้';
+     _firebaseMessaging.configure(
+        onMessage: (Map<String,dynamic> message)  async {
+          print('on main result $message');
+          if(message['data']['requestState']=='wait'){
+            _result = 0;
+          }else if(message['data']['requestState']=='reject'){
+            _result = 1;
+          }else if(message['data']['requestState']=='approve'){
+            _result = 2;
+          }else if(message['data']['requestState']=='timeout'){
+            _result = 3;
+          }
+          onChanged();
+        },
+        onResume: (Map<String,dynamic> message) async  {
+          print('on resume result $message');
+          if(message['data']['requestState']=='wait'){
+            _result = 0;
+          }else if(message['data']['requestState']=='reject'){
+            _result = 1;
+          }else if(message['data']['requestState']=='approve'){
+            _result = 2;
+          }else if(message['data']['requestState']=='timeout'){
+            _result = 3;
+          }
+          onChanged();
+        },
+  );
   }
   @override
   void dispose(){
@@ -63,19 +92,19 @@ class _ResultUserState extends State<ResultUser> {
         _iconColor = Colors.red;
         _displayText1 = 'แอดมินไม่อนุมัติ';
         _displayText2 = '';
-        _displayText3 = 'กลับสู่หน้าแรก';
+        _displayText3 = 'กลับสู่หน้าหลัก';
       } else if (_result == 2) {
         _showIcon = Icons.check_circle_outline;
         _iconColor = Colors.green;
         _displayText1 = 'ถูกอนุมัติแล้ว';
         _displayText2 = '';
-        _displayText3 = 'กลับสู่หน้าแรก';
+        _displayText3 = 'กลับสู่หน้าหลัก';
       }else if( _result == 3){
         _showIcon = Icons.timer_off;
         _iconColor = Colors.red;
         _displayText1 = 'คำร้องขอหมดอายุ';
         _displayText2 = '';
-        _displayText3 = 'กลับสู่หน้าแรก';
+        _displayText3 = 'กลับสู่หน้าหลัก';
       }
     });  
     }
@@ -87,14 +116,15 @@ class _ResultUserState extends State<ResultUser> {
   Widget build(BuildContext context) {
     return WillPopScope(
     onWillPop: (){
-      Navigator.of(context).pop();
+      _showAlertDialog(context);
     },
     child: Scaffold(
       appBar: AppBar(
         leading: new IconButton(
           icon: new Icon(Icons.arrow_back),
           onPressed: (){
-            Navigator.pop(context);}
+            _showAlertDialog(context);
+            }
         ),
       ),
       body: Column(
@@ -208,14 +238,13 @@ class _ResultUserState extends State<ResultUser> {
                     style: TextStyle(
                         fontFamily: 'Kanit', color: Colors.blueAccent),
                   ),
-                  onPressed: () async { 
+                  onPressed: () async {  
                     await _requestController.update(token,requestId, 'cancel');
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
                     Navigator.push(context,
                     MaterialPageRoute(builder: (context) => HomeUser(token)));
-                    
                   },
                 ),
               ],

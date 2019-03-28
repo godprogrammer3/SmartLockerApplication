@@ -27,9 +27,9 @@ class UserConfirmationDialog extends StatelessWidget{
               style: TextStyle(fontFamily: 'Kanit'),
             ),
             content: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment:MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                FlatButton(
+                  FlatButton(
                   child: Text(
                     'ไม่ใช่',
                     style: TextStyle(
@@ -41,29 +41,62 @@ class UserConfirmationDialog extends StatelessWidget{
                 ),
                 FlatButton(
                   child: Text(
-                    'ใช่',
+                   'ใช่',
                     style: TextStyle(
                         fontFamily: 'Kanit', color: Colors.blueAccent),
                   ),
                   onPressed: () async {
+                      Map result = await _requestController.create(token,int.parse(boxNumber),int.parse(slotNumber),reason);
+                      print(result);
+                      if(result['success']==true){
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ResultUser(
+                                  boxNumber: this.boxNumber,
+                                  slotNumber: this.slotNumber,
+                                  token: this.token,
+                                  requestId: result['id'],
+                                  )));
+                      }else{
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                        _showAlertDialog(context);
+                      }
+                        
+                 
                     
-                    Map result = await _requestController.create(token,int.parse(boxNumber),int.parse(slotNumber),reason);
-                    print(result);
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop();
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ResultUser(
-                                boxNumber: this.boxNumber,
-                                slotNumber: this.slotNumber,
-                                token: this.token,
-                                requestId: result['id'],
-                                )));
                     
                   },
                 ),
               ],
             ));
   }
+  void _showAlertDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+            title: Text(
+              'เกิดข้อผิดพลาดในการดำเนินการ !',
+              style: TextStyle(fontFamily: 'Kanit'),
+            ),
+            content: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                FlatButton(
+                  child: Text(
+                    'กลับสู่หน้าหลัก',
+                    style: TextStyle(
+                        fontFamily: 'Kanit', color: Colors.blueAccent),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            )));
+  }
 }
+ 

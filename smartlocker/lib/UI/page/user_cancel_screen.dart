@@ -38,22 +38,27 @@ class _UserCancelState extends State<UserCancle> {
         backgroundColor: Colors.deepOrange,
       ),
       drawer: SideMenuUser(this._firebaseMessaging,1,token),
-      body:UserCancleBody(token),
+      body:UserCancleBody(token,requestId),
     );
   }
 }
 
 class UserCancleBody extends StatefulWidget{
   String token;
-  UserCancleBody(this.token);
+  int requestId;
+  UserCancleBody(this.token,this.requestId);
   @override
   State<StatefulWidget> createState() {
-    return UserCancleBodyState();
+    return UserCancleBodyState(token,requestId);
   }
 
 }
 
 class UserCancleBodyState extends State<UserCancleBody>{
+  String token;
+  int requestId;
+  var _requestController = new RequestController();
+  UserCancleBodyState(this.token,this.requestId);
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -62,13 +67,66 @@ class UserCancleBodyState extends State<UserCancleBody>{
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text('คืนตู้')
+             Icon(
+              Icons.exit_to_app,
+              color:Colors.blueAccent,
+              size: 120,
+              ),
+            RaisedButton(
+                  child: Text(
+                    'คืนอุปกรณ์',
+                    style: TextStyle(fontFamily: 'Kanit',fontSize: 30),
+                    
+                  ),
+                  onPressed: () {
+                   _showAlertDialog(context);
+                  },
+                ),
           ],
         )
       ],
     );
   }
-
+   void _showAlertDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+            title: Text(
+              'ยืนยัน\nจะคืนอุปกรณ์ใช้หรือไม่',
+              style: TextStyle(fontFamily: 'Kanit'),
+            ),
+            content: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                FlatButton(
+                  child: Text(
+                    'ไม่ใช่',
+                    style: TextStyle(
+                        fontFamily: 'Kanit', color: Colors.blueAccent),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                FlatButton(
+                  child: Text(
+                    'ใช่',
+                    style: TextStyle(
+                        fontFamily: 'Kanit', color: Colors.blueAccent),
+                  ),
+                  onPressed: () async {  
+                    print("requestId :"+requestId.toString());
+                    Map result = await _requestController.update(token,requestId, 'cancel');
+                    print(result);
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                    Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => HomeUser(token)));
+                  },
+                ),
+              ],
+            )));
+  }
 }
 
 

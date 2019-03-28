@@ -24,19 +24,6 @@ class _HomeUserState extends State<HomeUser> {
   int userId;
   @override
   void initState(){
-    
-    _firebaseMessaging.configure(
-      onMessage: (Map<String,dynamic> message) async {
-        print('on message $message');
-      },
-      onLaunch: (Map<String,dynamic> message) async {
-        print('on launch $message');
-      },
-      onResume: (Map<String,dynamic> message) async {
-        print('on resume $message');
-      }
-    );
-    
     _firebaseMessaging.getToken().then((token) async {
       print('token:'+token);
       Map result = await _userController.updateFcmToken(this.token, token);
@@ -59,12 +46,12 @@ class _HomeUserState extends State<HomeUser> {
   void prepare() async {
     Map userRecentRequest = await _userController.getRecentRequest(token) as Map;
     if(userRecentRequest['state'] == 'approve' && false){
-      Navigator.of(context).pop();
+      print(userRecentRequest['id']);
       Navigator.of(context).pop();
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => UserCancle(this.token,this.requestId,this._firebaseMessaging),
+          builder: (context) => UserCancle(this.token,userRecentRequest['id'],this._firebaseMessaging),
         )
       );
     }
