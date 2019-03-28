@@ -131,7 +131,10 @@ class HistoryBodyState extends State<HistoryBody> {
               switch (asyncSnapshot.connectionState) {
                 case ConnectionState.none:
                 case ConnectionState.waiting:
-                  return new Text('loading...');
+                  return Column(
+                    children:[
+                    new CircularProgressIndicator(),
+                    new Text('loading...')]);
                 default:
                   if (asyncSnapshot.hasError)
                     return new Text('Error: ${asyncSnapshot.error}');
