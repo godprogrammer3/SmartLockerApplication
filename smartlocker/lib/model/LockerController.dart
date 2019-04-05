@@ -4,8 +4,9 @@ import 'package:http/http.dart';
 import 'dart:io';
 class LockerController{
   final httpClient = new Client();
+  final String host = "http://139.59.242.154:8888";
   Future<Map> getBoxState(String token,int lockerNumber,int boxNumber) async {
-    String url ='http://smart-locker-227608.appspot.com/v1.1/lockers/${lockerNumber}/boxes/${boxNumber}';
+    String url ='$host/v1.1/lockers/${lockerNumber}/boxes/${boxNumber}';
     var response = await httpClient.get(url,  headers: {HttpHeaders.authorizationHeader: token},);
      //print('Response status: ${response.statusCode}');
      var  result = new Map();
@@ -19,7 +20,7 @@ class LockerController{
     return result; 
   }
   Future<Map> update(String token,int lockerNumber,int boxNumber,String state) async {
-    String url ='http://smart-locker-227608.appspot.com//v1.1/lockers/$lockerNumber/boxes/$boxNumber';
+    String url ='$host/v1.1/lockers/$lockerNumber/boxes/$boxNumber';
     Map data ={
       'state':state
     };
@@ -36,7 +37,7 @@ class LockerController{
     return result; 
   }
   Future<Map> getRecentRequest(String token,int lockerNumber,int boxNumber) async {
-    String url ='http://smart-locker-227608.appspot.com/v1.1/lockers/$lockerNumber/boxes/$boxNumber/requests?order=id:DESC&limit=1';
+    String url ='$host/v1.1/lockers/$lockerNumber/boxes/$boxNumber/requests?order=id:DESC&limit=1';
     var response = await httpClient.get(url,  headers: {HttpHeaders.authorizationHeader: token},);
      //print('Response status: ${response.statusCode}');
     var tmpResult;
@@ -53,7 +54,7 @@ class LockerController{
     return result; 
   }
   Future<Map> countLocker(String token) async {
-    String url ='http://smart-locker-227608.appspot.com/v1.1/lockers/count?';
+    String url ='$host/v1.1/lockers/count?';
     var response = await httpClient.get(url,  headers: {HttpHeaders.authorizationHeader: token},);
      print('Response status of countLocker: ${response.statusCode}');
     var tmpResult;
@@ -69,7 +70,7 @@ class LockerController{
     return result; 
   }
    Future<Map> countBox(String token,int lockerNumber) async {
-    String url ='http://smart-locker-227608.appspot.com/v1.1/lockers/${lockerNumber}/boxes/count?';
+    String url ='$host/v1.1/lockers/${lockerNumber}/boxes/count?';
     var response = await httpClient.get(url,  headers: {HttpHeaders.authorizationHeader: token},);
      print('Response status of countBox: ${response.statusCode}');
     var result = new Map();
@@ -83,7 +84,7 @@ class LockerController{
     return result; 
   }
   Future<Map> countOpenboxs(String token,int lockerNumber) async {
-    String url ='http://smart-locker-227608.appspot.com/v1.1/lockers/${lockerNumber}/boxes?state=open';
+    String url ='$host/v1.1/lockers/${lockerNumber}/boxes?state=open';
     var response = await httpClient.get(url,  headers: {HttpHeaders.authorizationHeader: token},);
      print('Response status of countOpenBoxs: ${response.statusCode}');
     var result = new Map();
@@ -97,7 +98,7 @@ class LockerController{
     return result; 
   }
   Future<Map> countLockerRequest(String token,int lockerNumber) async {
-    String urlTotalBox ='http://smart-locker-227608.appspot.com/v1.1/lockers/${lockerNumber}/boxes/count?';
+    String urlTotalBox ='$host/v1.1/lockers/${lockerNumber}/boxes/count?';
     var responseTotalBox = await httpClient.get(urlTotalBox,  headers: {HttpHeaders.authorizationHeader: token},);
     int totalBox =jsonDecode(responseTotalBox.body)['count'];
     int totalRequest = 0;
@@ -121,10 +122,10 @@ class LockerController{
    
   }
   Future<List> getBoxsWithQuery(String token,int lockerNumber,int boxNumber,String query) async {
-    String maxIdUrl = 'http://smart-locker-227608.appspot.com/v1.1/lockers/${lockerNumber}/boxes/${boxNumber}/requests?limit=1&order=id:DESC';
+    String maxIdUrl = '$host/v1.1/lockers/${lockerNumber}/boxes/${boxNumber}/requests?limit=1&order=id:DESC';
     var maxIdResponse = await httpClient.get(maxIdUrl,  headers: {HttpHeaders.authorizationHeader: token},);
     int maxId = jsonDecode(maxIdResponse.body)[0]['id'];
-    String url ='http://smart-locker-227608.appspot.com/v1.1/lockers/${lockerNumber}/boxes/${boxNumber}/requests?'+query+'&limit='+maxId.toString();
+    String url ='$host/v1.1/lockers/${lockerNumber}/boxes/${boxNumber}/requests?'+query+'&limit='+maxId.toString();
     var response = await httpClient.get(url,  headers: {HttpHeaders.authorizationHeader: token},);
      print('Response status of getBoxsWithQuery: ${response.statusCode}');
     List result = new List();
@@ -138,7 +139,7 @@ class LockerController{
     return result;
   }
 Future<List> getAllBoxState(String token,int lockerNumber) async {
-    String url ='http://smart-locker-227608.appspot.com/v1.1/lockers/${lockerNumber}/boxes?';
+    String url ='$host/v1.1/lockers/${lockerNumber}/boxes?';
     var response = await httpClient.get(url,  headers: {HttpHeaders.authorizationHeader: token},);
      print('Response status of getAllBoxState: ${response.statusCode}');
     List result = new List();

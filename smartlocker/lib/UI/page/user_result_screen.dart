@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:smartlocker/main.dart';
 import 'Page.dart';
 import 'dart:async';
 import '../../model/Model.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 class ResultUser extends StatefulWidget {
   ResultUser({Key key, this.token,this.requestId, this.boxNumber,this.slotNumber}) : super(key: key);
   final String boxNumber;
@@ -33,7 +33,6 @@ class _ResultUserState extends State<ResultUser> {
   String boxNumber;
   String slotNumber;
   String token;
-  FirebaseMessaging _firebaseMessaging= new FirebaseMessaging();
   var _requestController = new RequestController();
   var _userController = new UserController();
   @override
@@ -45,34 +44,23 @@ class _ResultUserState extends State<ResultUser> {
     _displayText1 = 'ยังไม่ถูกอนุมัติ';
     _displayText2 = 'กรุณารอการอนุมัติจากแอดมิน';
     _displayText3 = 'ยกเลิกขอเปิดตู้';
-     _firebaseMessaging.configure(
-        onMessage: (Map<String,dynamic> message)  async {
-          print('on message result $message');
-          if(message['data']['requestState']=='wait'){
-            _result = 0;
-          }else if(message['data']['requestState']=='reject'){
-            _result = 1;
-          }else if(message['data']['requestState']=='approve'){
-            _result = 2;
-          }else if(message['data']['requestState']=='timeout'){
-            _result = 3;
-          }
-          onChanged();
-        },
-        onResume: (Map<String,dynamic> message) async  {
-          print('on resume result $message');
-          if(message['data']['requestState']=='wait'){
-            _result = 0;
-          }else if(message['data']['requestState']=='reject'){
-            _result = 1;
-          }else if(message['data']['requestState']=='approve'){
-            _result = 2;
-          }else if(message['data']['requestState']=='timeout'){
-            _result = 3;
-          }
-          onChanged();
-        },
-  );
+    super.initState();
+    eventBus.on<Map>().listen((event){update(event);});
+  }
+  void update(Map<dynamic,dynamic> data){
+    print('Update in userResult');
+    if(data['eventType']=='fcmUpdate'){
+      if(data['requestState']=='wait'){
+        _result = 0;
+      }else if(data['requestState']=='reject'){
+        _result = 1;
+      }else if(data['requestState']=='approve'){
+        _result = 2;
+      }else if(data['requestState']=='timeout'){
+        _result = 3;
+      }
+      onChanged();
+    }
   }
   @override
   void dispose(){

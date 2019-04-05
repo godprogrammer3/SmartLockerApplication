@@ -4,12 +4,12 @@ import 'package:http/http.dart';
 import 'dart:io';
 class UserController{
   final httpClient = new Client();
-
+  final String host = "http://139.59.242.154:8888";
   Future<Map> login(String userName,String userPassword) async {
-    String url ='http://smart-locker-227608.appspot.com/v1.1/users/login';
+    String url ='$host/v1.1/users/login';
     Map data ={
-      'username': 'demo',
-      'password': 'demo'
+      'username': userName,
+      'password': userPassword
     };
     var response = await httpClient.post(url,body:jsonEncode(data),headers: {"Content-Type": "application/json"}); 
     print('Response login status: ${response.statusCode}');
@@ -24,7 +24,7 @@ class UserController{
     return result; 
   }
   Future<Map> getRecentRequest(String token) async {
-    String url ='http://smart-locker-227608.appspot.com/v1.1/me/requests?limit=1&order=id:DESC';
+    String url ='$host/v1.1/me/requests?limit=1&order=id:DESC';
     var response = await httpClient.get(url,headers: {HttpHeaders.authorizationHeader: token}); 
     print('Response recent status: ${response.statusCode}');
     var  result = new Map();
@@ -44,7 +44,7 @@ class UserController{
     return result; 
   }
   Future<Map> updateFcmToken(String token,String fcmToken) async {
-    String url ='http://smart-locker-227608.appspot.com/v1.1/me';
+    String url ='$host/v1.1/me';
     Map data ={
       'FCM_token':fcmToken
     };
