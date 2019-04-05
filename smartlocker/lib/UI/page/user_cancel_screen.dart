@@ -8,19 +8,23 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 class UserCancle extends StatefulWidget {
   String token;
   int requestId;
+  int lockerNumber;
+  int boxNumber;
   FirebaseMessaging _firebaseMessaging= new FirebaseMessaging();
-  UserCancle(this.token,this.requestId,this._firebaseMessaging);
+  UserCancle(this.token,this.requestId,this._firebaseMessaging,this.lockerNumber,this.boxNumber);
   @override
   State<StatefulWidget> createState() {
-    return _UserCancelState(token,requestId,_firebaseMessaging);
+    return _UserCancelState(token,requestId,_firebaseMessaging,this.lockerNumber,this.lockerNumber);
   }
 }
 
 class _UserCancelState extends State<UserCancle> {
   String token;
   int requestId;
+  int lockerNumber;
+  int boxNumber;
    FirebaseMessaging _firebaseMessaging= new FirebaseMessaging();
-  _UserCancelState(this.token,this.requestId,this._firebaseMessaging);
+  _UserCancelState(this.token,this.requestId,this._firebaseMessaging,this.lockerNumber,this.boxNumber);
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
@@ -38,7 +42,7 @@ class _UserCancelState extends State<UserCancle> {
         backgroundColor: Colors.deepOrange,
       ),
       drawer: SideMenuUser(this._firebaseMessaging,1,token),
-      body:UserCancleBody(token,requestId),
+      body:UserCancleBody(token,requestId,this.lockerNumber,this.boxNumber),
     );
   }
 }
@@ -46,10 +50,12 @@ class _UserCancelState extends State<UserCancle> {
 class UserCancleBody extends StatefulWidget{
   String token;
   int requestId;
-  UserCancleBody(this.token,this.requestId);
+  int lockerNumber;
+  int boxNumber;
+  UserCancleBody(this.token,this.requestId,this.lockerNumber,this.boxNumber);
   @override
   State<StatefulWidget> createState() {
-    return UserCancleBodyState(token,requestId);
+    return UserCancleBodyState(token,requestId,this.lockerNumber,this.boxNumber);
   }
 
 }
@@ -57,8 +63,11 @@ class UserCancleBody extends StatefulWidget{
 class UserCancleBodyState extends State<UserCancleBody>{
   String token;
   int requestId;
+  int lockerNumber;
+  int boxNumber;
   var _requestController = new RequestController();
-  UserCancleBodyState(this.token,this.requestId);
+  var _lockerController = new LockerController();
+  UserCancleBodyState(this.token,this.requestId,this.lockerNumber,this.boxNumber);
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -116,7 +125,7 @@ class UserCancleBodyState extends State<UserCancleBody>{
                   ),
                   onPressed: () async {  
                     print("requestId :"+requestId.toString());
-                    Map result = await _requestController.update(token,requestId, 'cancel');
+                    Map result = await _lockerController.update(token, lockerNumber, boxNumber, 'close');
                     print(result);
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();

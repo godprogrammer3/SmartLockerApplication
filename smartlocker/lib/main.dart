@@ -1,19 +1,34 @@
 import 'package:flutter/material.dart';
 import 'UI/page/Page.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:minibus/minibus.dart';
+import 'package:event_bus/event_bus.dart';
+EventBus eventBus = EventBus();
 void main(){
   FirebaseMessaging _firebaseMessaging= new FirebaseMessaging();
-  _firebaseMessaging.configure(
-      onMessage: (Map<dynamic,dynamic> message)  async {
-        print('on message main $message');
+  _firebaseMessaging.configure( 
+      onMessage: (Map<String,dynamic> message)  async {
+        print('on message main $message');  
+        Map data = new Map();
+        data = message['data'];
+        data['eventType'] = 'fcmUpdate';
+        eventBus.fire(data);
       },
-      onResume: (Map<dynamic,dynamic> message) async  {
+      onResume: (Map<String,dynamic> message) async  {
         print('on resume main $message');
+         Map data = new Map();
+        data = message['data'];
+        data['eventType'] = 'fcmUpdate';
+        eventBus.fire(data);
       },
-      onLaunch: (Map<dynamic,dynamic> message)  async {
-        print('on launch main $message');
+      onLaunch: (Map<String,dynamic> message) async  {
+        print('on resume main $message');
+        Map data = new Map();
+        data = message['data'];
+        data['eventType'] = 'fcmUpdate';
+        eventBus.fire(data);
       }
-  );
+    );
   runApp(MyApp());
 } 
 class MyApp extends StatefulWidget{
@@ -35,8 +50,7 @@ class MyAppState extends State<MyApp>{
       title: "Smart Locker",
       theme: ThemeData(
          primarySwatch: Colors.deepOrange,
-      ),
-      //combine those screens
+      ),  //combine those screens
       home: LoginPage(),
       debugShowCheckedModeBanner: false,
     );

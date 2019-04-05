@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smartlocker/main.dart';
 import 'Widget.dart';
 import '../../model/Model.dart';
 
@@ -50,7 +51,12 @@ class AddminConfirm extends StatelessWidget {
             }else{
               print(requestResult['error']);
             }
-            
+            Map message = new Map();
+            message['eventType'] = 'replyState';
+            message['boxNumber'] = boxNumber.toString();
+            message['boxState'] = 'close';
+            message['lockerNumber'] = lockerNumber.toString();
+            eventBus.fire(message);
             Navigator.of(context).pop();
             
           },
@@ -73,6 +79,12 @@ class AddminConfirm extends StatelessWidget {
             }else{
               print(lockerResult['error']);
             }
+             Map message = new Map();
+            message['eventType'] = 'replyState';
+            message['boxNumber'] = boxNumber.toString();
+            message['boxState'] = 'open';
+            message['lockerNumber'] = lockerNumber.toString();
+            eventBus.fire(message);
             Navigator.of(context).pop();
           },
         ),

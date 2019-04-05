@@ -68,7 +68,7 @@ class SideMenuAdmin extends StatelessWidget {
             onTap: () async {
               _firebaseMessaging.deleteInstanceID();
               _userController.updateFcmToken(token,'');
-              await timerController.cancel();
+              //await timerController.cancel();
               Navigator.of(context).pop();
               Navigator.of(context).pop();
               Navigator.push(

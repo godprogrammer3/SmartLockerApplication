@@ -47,7 +47,7 @@ class _ResultUserState extends State<ResultUser> {
     _displayText3 = 'ยกเลิกขอเปิดตู้';
      _firebaseMessaging.configure(
         onMessage: (Map<String,dynamic> message)  async {
-          print('on main result $message');
+          print('on message result $message');
           if(message['data']['requestState']=='wait'){
             _result = 0;
           }else if(message['data']['requestState']=='reject'){

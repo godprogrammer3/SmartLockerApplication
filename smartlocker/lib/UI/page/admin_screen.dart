@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:smartlocker/main.dart';
 import '../../model/Model.dart';
 import '../widget/Widget.dart';
 import '../page/Page.dart';
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
-
-Timer timerController;
 
 class HomeAdmin extends StatefulWidget {
   String token;
@@ -20,37 +19,30 @@ class _HomeAdminState extends State<HomeAdmin> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   String token;
   FirebaseMessaging _firebaseMessaging= new FirebaseMessaging();
+  int totalLocker = 0;
   var _userController = new UserController();
+  var _lockerController = new LockerController();
+  
   _HomeAdminState(this.token);
   @override
   void initState(){
-    _firebaseMessaging.configure(
-      onMessage: (Map<String,dynamic> message){
-        print('on message $message');
-      },
-      onLaunch: (Map<String,dynamic> message){
-        print('on launch $message');
-      },
-      onResume: (Map<String,dynamic> message){
-        print('on resume $message');
-      }
-    );
+    super.initState();
      _firebaseMessaging.getToken().then((token) async {
       print('token:'+token);
       Map result = await _userController.updateFcmToken(this.token, token);
       if(result['success'] == true){
-        print(result);
+        print('put fcm token success');
       }else{
         print(result['error']);
       }
     });
+
   }
   @override
   Widget build(BuildContext context) {
     return new WillPopScope(
-      onWillPop: () async {
-        await timerController.cancel();
-        await Navigator.of(context).pop();
+      onWillPop: (){
+        Navigator.of(context).pop();
       },
       child: new Scaffold(
         key: _scaffoldKey,
@@ -80,90 +72,58 @@ class HomeAdminBody extends StatefulWidget {
 }
 
 class _HomeAdminBodyState extends State<HomeAdminBody> {
-  var _requestController = new RequestController();
   var _lockerController = new LockerController();
   var _userController = new UserController();
-  
+  List<Map> lockerData;
   String token = '';
+  FirebaseMessaging _firebaseMessaging= new FirebaseMessaging();
   _HomeAdminBodyState(this.token);
-  final lockerStatus = List<int>.generate(9, (i) => 0);
-  List<Color> lockerColor = List.generate(9, (i) {
-    return Colors.green;
-  });
-  List<String> requestId = List.generate(9, (i) => '');
-  bool firstUpdate = false;
+  bool firstUpdate = true;
+  var loadingData;
   @override
   void initState(){
-    const millis = const Duration(milliseconds: 500);
-    timerController = new Timer.periodic(millis, (Timer t) => updateState(t));
-    
+    super.initState();  
+    eventBus.on<Map>().listen((event){update(event);});
   }
-
-  updateState(Timer t) async {
-    if(token==''){
-      Map userLoginResult = await _userController.login('admin', 'admin') as Map;
-      //print(userLoginResult);
-      if(userLoginResult['success']==true){
-        //print(userLoginResult['user']);
-        token = userLoginResult['token'];
-        //print(token);
-      
+  void update(Map<dynamic,dynamic> data){
+    print('Update in admin');
+    print('data : '+data.toString());
+    if(data['eventType'] == 'replyState'){
+      print('admin replyState');
+      if(this.mounted){
+       setState(() {
+        lockerData[int.parse(data['lockerNumber'])-1]['waitRequest']--;
+       });
+       print('admin mounted');
       }else{
-        print(userLoginResult['error']);
+        print('admin not mount');
       }
-    }
-
-     for(int i=1 ; i<=9 ; i++){
-      Map lockerBoxStateResult = await _lockerController.getBoxState(token,1,i) as Map;
-      if(lockerBoxStateResult['state']=='close'){
-        if(this.mounted){
-          setState(() {
-            lockerColor[i-1] = Colors.green;     
-            lockerStatus[i-1] = 0;    
-                });
-        }
-        
-      }else if(lockerBoxStateResult['state']=='request'){
-        if(this.mounted){
-          setState(() {
-            lockerColor[i-1] = Colors.yellow;
-            lockerStatus[i-1] = 1;            
-                });
-        }
-      }else{
-        if(this.mounted){
-           setState(() {
-            lockerColor[i-1] = Colors.red;
-            lockerStatus[i-1] = 2;            
-                });
-        }
+    }else if(data['eventType'] == 'fcmUpdate'){
+      if(this.mounted){
+       setState(() {
+        lockerData[int.parse(data['lockerNumber'])-1]['waitRequest']++;
+       });
       }
-
     }
     
-    if (firstUpdate == false) {
-      firstUpdate = true;
-    }
+   
   }
-
-  void onChanged(index) async {
-    if (firstUpdate == true) {
-      if (lockerStatus[index] == 1) {
-        Map lockerRecentRequestResult = await _lockerController.getRecentRequest(token,1,1) as Map;
-        showAdminConfirm(
-            context,
-            token,
-            lockerRecentRequestResult['requestUser']['username'],
-            lockerRecentRequestResult['createdAt'],
-            lockerRecentRequestResult['reason'],
-            lockerRecentRequestResult['id'],
-            1,
-            index+1
-            );
-        
+  Future<dynamic> prepare() async {
+      Map result = await _lockerController.countLocker(token) as Map;
+      if(result['success']==true){
+        lockerData = new List<Map>(result['count']);
+        print('total Locker:'+lockerData.length.toString());
+        for(int i = 1 ; i <= lockerData.length ; i++){
+          lockerData[i-1] = new Map();
+          lockerData[i-1]['waitRequest'] = (await _lockerController.countLockerRequest(token, i) as Map)['count'];
+          lockerData[i-1]['openBoxs'] = (await _lockerController.countOpenboxs(token, i) as Map)['count'];
+        }
+      }else{
+        print(result['error']);
       }
-    }
+    return _lockerController.countLocker(token);
   }
+  
 
   @override
   void dispose() {
@@ -172,64 +132,134 @@ class _HomeAdminBodyState extends State<HomeAdminBody> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(top: 80.0),
-      child: GridView.count(
-        crossAxisCount: 3,
-        children: List.generate(9, (index) {
-          return GestureDetector(
-              onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Locker(token,index+1),
-                    )
-                  );
-              },
-              child: Column(
-                children: <Widget>[
-                  Stack(
-                    children: <Widget>[
-                      new Icon(
-                        Icons.chrome_reader_mode,
-                        size: 80,
-                      ),
-                      new Positioned(
-                        right: 0,
-                        child: new Container(
-                          padding: EdgeInsets.all(1),
-                          decoration: new BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          constraints: BoxConstraints(
-                            minWidth: 12,
-                            minHeight: 12,
-                          ),
-                          child: new Text(
-                            '10',
-                            style: new TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-              
-                  Text(
-                    (index+1).toString(),
-                    style: TextStyle(
-                      fontSize: 20.0,
-                    ),
-                  ),
-                ],
-              ));
-        }),
-      ),
-    );
+    if(firstUpdate){
+      loadingData = prepare();
+      firstUpdate = false;
+      return FutureBuilder(
+              future: loadingData,
+              builder: (context, asyncSnapshot) {
+                switch (asyncSnapshot.connectionState) {
+                  case ConnectionState.none:
+                  case ConnectionState.waiting:
+                    return preLoading();
+                    break;
+                  default:{
+                    if(asyncSnapshot.hasError){
+                      return errorDisplay(Text('เกิดข้อผิดพลาด:'+asyncSnapshot.error));
+                    }else if(asyncSnapshot.data['success'] == false){
+                      return errorDisplay(Text('เกิดข้อผิดพลาด:'+asyncSnapshot.data[1]['error']));
+                    }else if(asyncSnapshot.data.toString() == '[]' ){
+                      return errorDisplay(Text('ไม่มีข้อมูล'));
+                    }else if(asyncSnapshot.hasData){
+                      print('LockerData length:'+lockerData.length.toString());
+                      return  bodyComponent(context,lockerData.length);
+                    }else{
+                      return preLoading();
+                    }
+                  }
+
+                }
+              });
+    }else{
+      return bodyComponent(context, lockerData.length);
+    }
+    
   }
+
+    Widget bodyComponent(BuildContext context,int totalLocker){
+      return new Container(
+          margin: EdgeInsets.only(top: 80.0),
+          child: GridView.count(
+            crossAxisCount: 3,
+            children: List.generate(totalLocker, (index) {
+              return GestureDetector(
+                  onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Locker(token,index+1,_firebaseMessaging),
+                        )
+                      );
+                  },
+                  child: Column(
+                    children: <Widget>[
+                      Stack(
+                          alignment: Alignment.topRight,
+                          children: <Widget>[
+                          new Container(
+                            width: 100,
+                            height: 70,
+                            margin: EdgeInsets.all(10),
+                            decoration: new BoxDecoration(
+                              gradient: LinearGradient(colors: [Colors.yellow[700], Colors.redAccent],
+                              begin: Alignment.topRight, end: Alignment.bottomLeft),
+                              border: Border.all(color: Colors.red,width: 2.0)
+                            ),
+                          ),
+                          ((lockerData[index]['waitRequest']>0)?new Align(alignment: Alignment.topRight,
+                            child: new Container(
+                              width: 27,
+                              height: 27,
+                              decoration: BoxDecoration(
+                                color: Colors.yellow,
+                                shape: BoxShape.circle
+                              ),
+                              alignment: Alignment.center,
+                              child: new Text((lockerData[index]['waitRequest']>0)?lockerData[index]['waitRequest'].toString():'', style: new TextStyle(color: Colors.black, fontWeight: FontWeight.bold),),
+                            ),):Text(''))
+                         
+                        ],
+                      ),
+                      
+                      Text(
+                        (index+1).toString(),
+                        style: TextStyle(
+                          fontSize: 20.0,
+                        ),
+                      ),
+                    ],
+                  ));
+            }),
+          ),
+        );
+    }
+
+    Widget preLoading(){
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              CircularProgressIndicator(),  
+              Text('กำลังโหลดข้อมูล.....'),
+            ],
+          )
+        ],
+      );
+      
+    }
+     Widget errorDisplay(Widget inside){
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              inside,
+              RaisedButton(
+                child: Text('ลองอีกครั้ง'),
+                onPressed: (){
+                  setState(() {
+                     firstUpdate = true;
+                  });
+                },
+              )
+            ],
+          )
+        ],
+      );
+      
+    }
 }
 

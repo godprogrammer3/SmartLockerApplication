@@ -19,6 +19,7 @@ class _HomeUserState extends State<HomeUser> {
   HomeUserBody _homeBody;
   var _userController = new UserController();
   var _requestController = new RequestController();
+  var _lockerController = new LockerController();
   FirebaseMessaging _firebaseMessaging = new FirebaseMessaging();
   int requestId;
   int userId;
@@ -36,22 +37,20 @@ class _HomeUserState extends State<HomeUser> {
     prepare();
     super.initState();
     _homeBody = HomeUserBody(token);
-    
-     
-    
-    
 
   }
 
   void prepare() async {
     Map userRecentRequest = await _userController.getRecentRequest(token) as Map;
-    if(userRecentRequest['state'] == 'approve' && false){
+    Map boxRecentSate = await _lockerController.getBoxState(token, userRecentRequest['Box']['lockerNumber'], userRecentRequest['Box']['number']);
+    if(userRecentRequest['state'] == 'approve' && boxRecentSate['state'] == 'open'){
       print(userRecentRequest['id']);
+      print(boxRecentSate);
       Navigator.of(context).pop();
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => UserCancle(this.token,userRecentRequest['id'],this._firebaseMessaging),
+          builder: (context) => UserCancle(this.token,userRecentRequest['id'],this._firebaseMessaging,userRecentRequest['Box']['lockerNumber'], userRecentRequest['Box']['number']),
         )
       );
     }
