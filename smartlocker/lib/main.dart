@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'UI/page/Page.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:minibus/minibus.dart';
 import 'package:event_bus/event_bus.dart';
 EventBus eventBus = EventBus();
 void main(){
