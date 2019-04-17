@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import '../page/Page.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../../model/Model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 class SideMenuAdmin extends StatelessWidget {
   FirebaseMessaging _firebaseMessaging;
   String token;
-  SideMenuAdmin(this._firebaseMessaging,this.token);
+  SideMenuAdmin(this._firebaseMessaging, this.token);
   var _userController = new UserController();
   @override
   Widget build(BuildContext context) {
@@ -53,7 +55,6 @@ class SideMenuAdmin extends StatelessWidget {
                   builder: (context) => History(this.token),
                 ),
               );
-             
             },
             leading: Icon(
               Icons.history,
@@ -66,8 +67,9 @@ class SideMenuAdmin extends StatelessWidget {
           ),
           ListTile(
             onTap: () async {
+              autoLogin();
               _firebaseMessaging.deleteInstanceID();
-              _userController.updateFcmToken(token,'');
+              _userController.updateFcmToken(token, '');
               //await timerController.cancel();
               Navigator.of(context).pop();
               Navigator.of(context).pop();
@@ -91,5 +93,17 @@ class SideMenuAdmin extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void autoLogin() {
+    logout().then((bool committed) {
+      print(committed);
+    });
+  }
+
+  Future<bool> logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('stateAutoLogin', false);
+    return prefs.commit();
   }
 }

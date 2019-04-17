@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'Page.dart';
@@ -36,6 +37,8 @@ class _LoginPageState extends State<LoginPage> {
     print(result);
     if (_formKey.currentState.validate()) {
       if (result['success'] == true) {
+        autoLogin(usernameController.text,passwordController.text);
+
         print('Login success');
         token = result['token'];
         print(result['user']['RoleId']);
@@ -262,4 +265,22 @@ String validateUsername(String value) {
     return 'เป็น a-z A-Z หรือ 0-9 เท่านั้น';
   else
     return null;
+}
+
+void autoLogin(user,password){
+  saveAuto(user,password).then(
+    (bool committed){
+      print(committed);
+    }
+  );
+
+}
+
+Future<bool> saveAuto(String user,String password)async{
+  SharedPreferences prefs =await SharedPreferences.getInstance();
+  prefs.setString('user', user);
+  prefs.setBool('stateAutoLogin', true);
+  prefs.setString('password', password);
+
+  return prefs.commit();
 }

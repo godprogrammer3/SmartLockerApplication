@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import '../page/Page.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../../model/Model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SideMenuUser extends StatelessWidget {
   FirebaseMessaging _firebaseMessaging;
   int popTimes;
   String token;
-  SideMenuUser(this._firebaseMessaging,this.popTimes,this.token);
+  SideMenuUser(this._firebaseMessaging, this.popTimes, this.token);
   var _userController = new UserController();
   @override
   Widget build(BuildContext context) {
@@ -47,9 +48,10 @@ class SideMenuUser extends StatelessWidget {
           ),
           ListTile(
             onTap: () {
+              autoLogin();
               _firebaseMessaging.deleteInstanceID();
-              _userController.updateFcmToken(token,'');
-              for(int i=0;i<popTimes;i++){
+              _userController.updateFcmToken(token, '');
+              for (int i = 0; i < popTimes; i++) {
                 Navigator.of(context).pop();
               }
               Navigator.push(
@@ -57,8 +59,7 @@ class SideMenuUser extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (context) => LoginPage(),
                 ),
-              );           
-              
+              );
             }, //get back to login screen
             leading: Icon(
               Icons.exit_to_app,
@@ -72,5 +73,17 @@ class SideMenuUser extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void autoLogin() {
+    logout().then((bool committed) {
+      print(committed);
+    });
+  }
+
+  Future<bool> logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('stateAutoLogin', false);
+    return prefs.commit();
   }
 }
