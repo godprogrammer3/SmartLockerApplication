@@ -125,7 +125,7 @@ class UserCancleBodyState extends State<UserCancleBody>{
                   ),
                   onPressed: () async {  
                     print("requestId :"+requestId.toString());
-                    Map result = await _lockerController.update(token, lockerNumber, boxNumber, 'close');
+                    Map result = await _requestController.update(token, requestId, 'returned');
                     print(result);
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
