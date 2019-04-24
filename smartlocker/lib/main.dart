@@ -40,8 +40,8 @@ void main() async {
 //   print(state);
 // print(user);
 // print(password);
-  if (state) {
-    Map<String, dynamic> result =
+  if (state==0||state==null) {
+    Map result =
         await _userController.login(user, password) as Map<String, dynamic>;
     print(result);
     
